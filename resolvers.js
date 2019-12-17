@@ -37,12 +37,13 @@ export default {
         where: { username: { [Op.substring]: username } }
         // ,order: [["username", "DESC"]]
       }),
-    getUserPost: (parent, { creatorPostId }, { models }) => {
+    getPost: (parent, { creatorPostId }, { models }) => {
       models.Post.findAll({
         where: { creatorPostId }
       });
     },
-    getUserComment: (parent, { creatorCommentId }, { models }) => {
+    allPost: (parent, args, { models }) => models.User.findAll(),
+    getComment: (parent, { creatorCommentId }, { models }) => {
       models.Comment.findAll({
         where: { creatorCommentId }
       });
@@ -50,20 +51,27 @@ export default {
   },
 
   Mutation: {
-    createUser: (parent, { input: { username, email } }, { models }) =>
-      models.User.create({ username, email }),
-    updateUser: (parent, { input: { id, email } }, { models }) =>
-      models.User.update({ email }, { where: { id } }),
+    createUser: (
+      parent,
+      { input: { username, email, password } },
+      { models }
+    ) => models.User.create({ username, email, password }),
+
+    updateUser: (parent, { input: { id, email, password } }, { models }) =>
+      models.User.update({ email, password }, { where: { id } }),
+
     deleteUser: (parent, { input: { id } }, { models }) =>
       models.User.destroy({ where: { id } }),
 
-    createUserPost: (parent, { creatorPostId, post }, { models }) =>
+    createPost: (parent, { creatorPostId, post }, { models }) =>
       models.Post.create({ creatorPostId, post }),
 
-    createUserComment: (
+    createComment: (
       parent,
       { creatorCommentId, postId, comment },
       { models }
-    ) => models.Comment.create({ creatorCommentId, postId, comment })
+    ) => models.Comment.create({ creatorCommentId, postId, comment }),
+    login: (parent, { username, password }, { models }) =>
+      models.Post.create({ username, password })
   }
 };
