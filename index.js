@@ -14,6 +14,7 @@ const schema = makeExecutableSchema({
 
 // Initialize the app
 const app = express();
+const port = 4000;
 
 // The GraphQL endpoint
 app.use(
@@ -29,12 +30,12 @@ app.use("/graphiql", graphiqlExpress({ endpointURL: "/graphql" }));
 models.sequelize
   .sync()
   .then(() =>
-    app.listen(3000, () =>
+    app.listen(port, () =>
       console.log(
         `
 
 
-        Running a GraphQL API server at http://localhost:3000/graphql`
+        Running a GraphQL API server at http://localhost:${port}/graphql`
       )
     )
   )

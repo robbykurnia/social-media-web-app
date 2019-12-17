@@ -24,6 +24,17 @@ type User {
   comments: [Comment!]!
 }
 
+input LoginInput {
+  username: String!
+  password: String!
+}
+
+input RegisterInput {
+  username: String!
+  email: String!
+  password: String!
+}
+
 input GetUserInput {
   id: Int
   username: String
@@ -32,12 +43,14 @@ input GetUserInput {
 
 input CreateUserInput {
   username: String!
+  password: String!
   email: String!
 }
 
 input UpdateUserInput {
   id: Int!
   email: String!
+  password: String!
 }
 
 input DeleteUserInput {
@@ -48,15 +61,18 @@ type Query {
   allUser: [User!]!
   getUser(input: GetUserInput!): User!
   searchUsername(username: String!): [User!]!
-  getUserPost(creatorPostId: Int!): [Post!]!
-  getUserComment(creatorCommentId: Int!): [Comment!]!
+  getPost(creatorPostId: Int!): [Post!]!
+  allPost: [Post!]!
+  getComment(creatorCommentId: Int!): [Comment!]!
 }
 
 type Mutation {
   createUser(input: CreateUserInput!): User
   updateUser(input: UpdateUserInput!): [Int!]!
   deleteUser(input: DeleteUserInput!): Int!
-  createUserPost(creatorPostId: Int!, post: String!): Post!
-  createUserComment(postId: Int!, creatorCommentId: Int!, comment: String!): Comment!
+  createPost(creatorPostId: Int!, post: String!): Post!
+  createComment(postId: Int!, creatorCommentId: Int!, comment: String!): Comment!
+  register(input: RegisterInput!): User
+  login(input: LoginInput!): User
 }
 `;
