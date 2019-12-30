@@ -3,12 +3,11 @@ import { Route, Switch, Redirect } from "react-router-dom";
 import "./App.css";
 import NavBar from "./components/navBar";
 import NotFound from "./components/notFound";
-import Home from "./components/home";
-import Posts from "./components/posts";
-import About from "./components/about";
-import Other from "./components/other";
+import Intro from "./components/intro";
+import Feed from "./components/feed";
+import Profile from "./components/profile";
 import Login from "./components/login";
-import Register from "./register";
+import Register from "./components/register";
 
 class App extends Component {
   state = {};
@@ -23,13 +22,12 @@ class App extends Component {
         <br />
         <div className="container">
           <Switch>
+            <Route path="/profile/:username" exact component={Profile} />
             <Route path="/login" exact component={Login} />
             <Route path="/register" exact component={Register} />
-            <Route path="/posts" exact component={Posts} />
-            <Route path="/other" exact component={Other} />
-            <Route path="/about" exact component={About} />
+            <Route path="/feed" exact component={Feed} />
             <Route path="/not-found" component={NotFound} />
-            <Route path="/" exact component={Home} />
+            <Route path="/" exact component={Intro} />
             <Redirect to="/not-found" />
           </Switch>
         </div>

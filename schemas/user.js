@@ -1,31 +1,22 @@
-export default `
-type Comment {
-  id: Int!
-  comment: String!
-  postId: Int!
-  creatorCommentId: Int!
-  creatorComment: User!
-}
-
-type Post {
-  id: Int!
-  post: String!
-  creatorPostId: Int!
-  comments: [Comment!]!
-}
-
+export const types = `
 type User {
   id: Int!
   username: String!
   email: String!
   createdAt: String!
-  UpdatedAt: String!
+  updatedAt: String!
   posts: [Post!]!
   comments: [Comment!]!
 }
+`;
+
+export const inputs = `
+input SearchUsernameInput {
+  username: String!
+}
 
 input LoginInput {
-  username: String!
+  email: String!
   password: String!
 }
 
@@ -56,23 +47,19 @@ input UpdateUserInput {
 input DeleteUserInput {
   id: Int!
 }
+`;
 
-type Query {
+export const queries = `
   allUser: [User!]!
   getUser(input: GetUserInput!): User!
-  searchUsername(username: String!): [User!]!
-  getPost(creatorPostId: Int!): [Post!]!
-  allPost: [Post!]!
-  getComment(creatorCommentId: Int!): [Comment!]!
-}
+  me: User
+  searchUsername(input: SearchUsernameInput!): [User!]!
+`;
 
-type Mutation {
+export const mutations = `
   createUser(input: CreateUserInput!): User
   updateUser(input: UpdateUserInput!): [Int!]!
   deleteUser(input: DeleteUserInput!): Int!
-  createPost(creatorPostId: Int!, post: String!): Post!
-  createComment(postId: Int!, creatorCommentId: Int!, comment: String!): Comment!
-  register(input: RegisterInput!): User
-  login(input: LoginInput!): User
-}
+  register(input: RegisterInput!): User!
+  login(input: LoginInput!): String!
 `;

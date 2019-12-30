@@ -1,72 +1,97 @@
 import React, { Component } from "react";
 import { Link, NavLink } from "react-router-dom";
 
+// Note:
+// 1. Perbaiki searchBar dan navbar-brand ketika ukuran extra-small.
+// 2. Perbaiki lebar container navbar dengan CONTENT yang tidak sama.
+
 class NavBar extends Component {
-  // state = {};
+  state = {};
+
+  handleSearchBar = () => {
+    // searchBar = this.state.searchBar === "collapse";
+  };
+
   handleSearch = () => {
     console.log("Search");
   };
   render() {
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <nav className="navbar navbar-expand-md navbar-light bg-light">
         <div className="container">
-          <Link className="navbar-brand" to="/">
-            E-Talk
+          {/* Hidden only on xs */}
+          <Link className="navbar-brand d-none d-sm-block" to="/">
+            EXPOSE
           </Link>
+          {/* Visible only on xs */}
+          <Link className="navbar-brand d-sm-none" to="/">
+            EXPOSE
+          </Link>
+
+          <form className="form-inline ml-auto d-md-none d-lg-none">
+            <div className="collapse" id="search-bar-xs">
+              <input
+                className="form-control form-control-sm mr-2"
+                id="search-bar-xs"
+                type="text"
+                placeholder="Search Person"
+                aria-label="Search"
+              />
+            </div>
+            <i
+              className="fa fa-search m-2"
+              data-toggle="collapse"
+              data-target="#search-bar-xs"
+              aria-expanded="false"
+              aria-controls="collapseExample"
+            ></i>
+          </form>
           <button
             className="navbar-toggler"
             type="button"
             data-toggle="collapse"
-            data-target="#navbarNav"
-            aria-controls="navbarNav"
+            data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup"
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav">
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/posts">
-                  Posts
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/other">
-                  Other
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/about">
-                  About
-                </NavLink>
-              </li>
-              <li>
-                <NavLink className="nav-link ml-auto" to="/login">
-                  Login
-                </NavLink>
-              </li>
-              <li>
-                <NavLink className="nav-link ml-auto" to="/register">
-                  Register
-                </NavLink>
-              </li>
-            </ul>
-            <form className="form-inline my-2 ml-auto">
-              <input
-                className="form-control mr-sm-2"
-                type="search"
-                placeholder="Search"
-                aria-label="Search"
-              />
-              <button
-                className="btn btn-outline-success my-10 my-sm-0"
-                type="submit"
-                onClick={this.handleSearch}
-              >
-                Search
-              </button>
-            </form>
+          <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div className="navbar-nav mr-auto">
+              <NavLink className="nav-link nav-item" to="/feed">
+                Home
+              </NavLink>
+              <NavLink className="nav-link nav-item" to="/profile/:username">
+                Profile
+              </NavLink>
+            </div>
+            <div className="navbar-nav ml-auto">
+              <form className="form-inline ">
+                <div className="collapse" id="collapseExample">
+                  <input
+                    className="form-control form-control-sm mr-2 ml-2 d-none d-md-block"
+                    id="collapseExample"
+                    type="text"
+                    placeholder="Search Person"
+                    aria-label="Search"
+                  />
+                </div>
+                <i
+                  className="fa fa-search m-2 d-none d-md-block"
+                  data-toggle="collapse"
+                  data-target="#collapseExample"
+                  aria-expanded="false"
+                  aria-controls="collapseExample"
+                ></i>
+              </form>
+              <NavLink className="nav-link nav-item" to="/login">
+                Login
+              </NavLink>
+              <NavLink className="nav-link nav-item" to="/register">
+                Register
+              </NavLink>
+            </div>
           </div>
         </div>
       </nav>
