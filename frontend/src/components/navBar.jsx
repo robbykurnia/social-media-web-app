@@ -62,7 +62,7 @@ class NavBar extends Component {
               <NavLink className="nav-link nav-item" to="/feed">
                 Home
               </NavLink>
-              <NavLink className="nav-link nav-item" to="/profile/:username">
+              <NavLink className="nav-link nav-item" to="/profile/?">
                 Profile
               </NavLink>
             </div>

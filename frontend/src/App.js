@@ -22,7 +22,7 @@ class App extends Component {
         <br />
         <div className="container">
           <Switch>
-            <Route path="/profile/:username" exact component={Profile} />
+            <Route path="/profile/:username?" exact component={Profile} />
             <Route path="/login" exact component={Login} />
             <Route path="/register" exact component={Register} />
             <Route path="/feed" exact component={Feed} />

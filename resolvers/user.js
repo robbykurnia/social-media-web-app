@@ -18,9 +18,9 @@ export const nested = {
 
 export const queries = {
   allUser: (parent, args, { models }) => models.User.findAll(),
-  getUser: (parent, { input: { id } }, { models }) =>
+  getUser: (parent, { input: { username } }, { models }) =>
     models.User.findOne({
-      where: { id }
+      where: { username }
     }),
   me: (parent, args, { models, req }) => {
     if (!req.isAuth) {
