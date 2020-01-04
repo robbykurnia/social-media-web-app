@@ -55,14 +55,6 @@ export const mutations = {
     { input: { username, email, password } },
     { models }
   ) => {
-    const isUsername = await models.User.findOne({
-      where: { username },
-      attributes: ["username"]
-    });
-    if (isUsername) {
-      throw new Error("Username already used");
-    }
-
     const isEmail = await models.User.findOne({
       where: { email },
       attributes: ["email"]
@@ -71,24 +63,32 @@ export const mutations = {
       throw new Error("Email already used");
     }
 
+    const isUsername = await models.User.findOne({
+      where: { username },
+      attributes: ["username"]
+    });
+    if (isUsername) {
+      throw new Error("Username already used");
+    }
+
     password = await bcrypt.hash(password, 12);
     return models.User.create({ username, email, password });
   },
   login: async (
     parent,
     { input: { email, password } },
-    { models, jwtSecretKey, res }
+    { models, jwtSecretKey }
   ) => {
     const user = await models.User.findOne({
       where: { email }
     });
     if (!user) {
-      throw new Error("Invalid Username or Password");
+      throw new Error("Invalid Email or Password");
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      throw new Error("Invalid Username or Password");
+      throw new Error("Invalid Email or Password");
     }
 
     const token = jwt.sign(
@@ -97,6 +97,12 @@ export const mutations = {
       { expiresIn: "1h" }
     );
 
-    return token;
+    // return token;
+
+    const data = ` ${token} ${user.username} ${user.email} `;
+    // const testData = data.split(" ");
+    // console.log(testData[0]);
+
+    return data;
   }
 };

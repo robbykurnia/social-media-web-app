@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 const jwtSecretKey = "put your secret key on environment!";
 
 export default async (req, res, next) => {
-  const token = req.get("x-auth-token");
+  const token = req.get("Authorization");
   if (!token || token === "") {
     req.isAuth = false;
     return next();

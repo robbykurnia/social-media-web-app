@@ -23,6 +23,11 @@ export const queries = {
 };
 
 export const mutation = {
-  createPost: (parent, { input: { creatorPostId, post } }, { models }) =>
-    models.Post.create({ creatorPostId, post })
+  createPost: (parent, { input: { creatorPostId, post } }, { models, req }) => {
+    console.log("req.isAuth: ", req.isAuth);
+    if (!req.isAuth) {
+      throw new Error("Invalid Token");
+    }
+    return models.Post.create({ creatorPostId, post });
+  }
 };

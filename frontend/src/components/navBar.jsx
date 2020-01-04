@@ -6,16 +6,8 @@ import { Link, NavLink } from "react-router-dom";
 // 2. Perbaiki lebar container navbar dengan CONTENT yang tidak sama.
 
 class NavBar extends Component {
-  state = {};
-
-  handleSearchBar = () => {
-    // searchBar = this.state.searchBar === "collapse";
-  };
-
-  handleSearch = () => {
-    console.log("Search");
-  };
   render() {
+    const { user } = this.props;
     return (
       <nav className="navbar navbar-expand-md navbar-light bg-light">
         <div className="container">
@@ -59,12 +51,19 @@ class NavBar extends Component {
           </button>
           <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div className="navbar-nav mr-auto">
-              <NavLink className="nav-link nav-item" to="/feed">
-                Home
-              </NavLink>
-              <NavLink className="nav-link nav-item" to="/profile/?">
-                Profile
-              </NavLink>
+              {user && (
+                <React.Fragment>
+                  <NavLink className="nav-link nav-item" to="/feed">
+                    Home
+                  </NavLink>
+                  <NavLink
+                    className="nav-link nav-item"
+                    to={`/profile/${user.user.username}`}
+                  >
+                    Profile
+                  </NavLink>
+                </React.Fragment>
+              )}
             </div>
             <div className="navbar-nav ml-auto">
               <form className="form-inline ">
@@ -85,12 +84,29 @@ class NavBar extends Component {
                   aria-controls="collapseExample"
                 ></i>
               </form>
-              <NavLink className="nav-link nav-item" to="/login">
-                Login
-              </NavLink>
-              <NavLink className="nav-link nav-item" to="/register">
-                Register
-              </NavLink>
+              {user && (
+                <React.Fragment>
+                  <NavLink
+                    className="nav-link nav-item"
+                    to={`/profile/${user.user.username}`}
+                  >
+                    {user.user.username}
+                  </NavLink>
+                  <NavLink className="nav-link nav-item" to="/logout">
+                    Logout
+                  </NavLink>
+                </React.Fragment>
+              )}
+              {!user && (
+                <React.Fragment>
+                  <NavLink className="nav-link nav-item" to="/login">
+                    Login
+                  </NavLink>
+                  <NavLink className="nav-link nav-item" to="/register">
+                    Register
+                  </NavLink>
+                </React.Fragment>
+              )}
             </div>
           </div>
         </div>

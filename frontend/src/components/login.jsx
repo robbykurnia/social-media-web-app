@@ -1,6 +1,10 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
+import ReactLoading from "react-loading";
 import { Link } from "react-router-dom";
 import { apiUrl } from "../config.json";
+import service from "../services/service";
+import SwalAlert from "../services/SwalAlert";
 
 const urlEndPoint = apiUrl;
 const tokenKey = "token";
@@ -12,16 +16,23 @@ class Login extends Component {
     this.password = React.createRef();
   }
 
-  handleSubmit = event => {
-    event.preventDefault();
+  state = { disabled: true, isLoading: false };
+
+  handleChange = () => {
     const email = this.email.current.value;
     const password = this.password.current.value;
 
-    // Update Soon
-    if (email.trim().length === 0 || password.trim().length === 0) return;
+    if (email.length !== 0 && password.length !== 0)
+      this.setState({ disabled: false });
+    else this.setState({ disabled: true });
+  };
 
-    console.log(`email: ${email} \npassword: ${password}`);
+  handleSubmit = event => {
+    event.preventDefault();
+    this.setState({ isLoading: true });
 
+    const email = this.email.current.value;
+    const password = this.password.current.value;
     const requestBody = {
       query: `
         mutation{
@@ -41,20 +52,29 @@ class Login extends Component {
         return res.json();
       })
       .then(user => {
+        this.setState({ isLoading: false });
         if (user.errors) {
-          return alert(JSON.stringify(user.errors[0].message));
+          const errorMessage = user.errors[0].message;
+          return SwalAlert.warning(errorMessage, "warning");
         } else {
-          localStorage.setItem(tokenKey, JSON.stringify(user.data.login));
-          return (window.location = "/");
+          const data = JSON.stringify(user.data.login).split(" ");
+          const jwt = data[1];
+          console.log(jwt);
+          localStorage.setItem(tokenKey, jwt);
+          return (window.location = "/feed");
+          // const jwt = JSON.stringify(user.data.login);
+          // localStorage.setItem(tokenKey, jwt);
+          // return (window.location = "/feed");
         }
       });
   };
 
   render() {
+    if (service.getCurrentUser()) return <Redirect to="/feed" />;
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form onSubmit={this.handleSubmit} onChange={this.handleChange}>
         <div className="form-group">
-          <label htmlFor="email">Email address</label>
+          <label htmlFor="email">Email</label>
           <input
             type="email"
             className="form-control"
@@ -78,9 +98,16 @@ class Login extends Component {
         <div className="mb-3">
           Don't have an account? <Link to="/register">Register</Link>
         </div>
-        <button type="submit" className="btn btn-primary">
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={this.state.disabled}
+        >
           Submit
         </button>
+        {this.state.isLoading && (
+          <ReactLoading type={"bars"} color={"#007bff"} className="mx-auto" />
+        )}
       </form>
     );
   }

@@ -7,25 +7,45 @@ import Intro from "./components/intro";
 import Feed from "./components/feed";
 import Profile from "./components/profile";
 import Login from "./components/login";
+import Logout from "./components/logout";
 import Register from "./components/register";
+import service from "./services/service";
 
 class App extends Component {
-  state = {};
+  constructor(props) {
+    super(props);
+    this.state = { user: service.getCurrentUser() };
+  }
+  // state = {};
 
-  getData = () => {};
+  // componentDidMount() {
+  // const user = service.getCurrentUser();
+  // this.setState({ user });
+  //   console.log("username di CDM: ", this.state.user);
+  // }
 
-  componentDidMount() {}
   render() {
+    const { user } = this.state;
+    console.log("username di render: ", user);
     return (
       <div>
-        <NavBar />
+        <NavBar user={user} />
         <br />
         <div className="container">
           <Switch>
-            <Route path="/profile/:username?" exact component={Profile} />
+            {/* <Route path="/profile/:username?" exact component={Profile} /> */}
+            {/* <Route path="/feed" exact component={Feed} /> */}
+            <Route
+              path="/profile/:username?"
+              render={props => <Profile {...props} user={user} />}
+            />
+            <Route
+              path="/feed"
+              render={props => <Feed {...props} user={user} />}
+            />
             <Route path="/login" exact component={Login} />
+            <Route path="/logout" exact component={Logout} />
             <Route path="/register" exact component={Register} />
-            <Route path="/feed" exact component={Feed} />
             <Route path="/not-found" component={NotFound} />
             <Route path="/" exact component={Intro} />
             <Redirect to="/not-found" />
