@@ -7,6 +7,7 @@ type Post {
   creatorPostId: Int!
   creatorPost: User!
   comments: [Comment!]!
+  likes: [Like!]!
 }
 `;
 
@@ -19,6 +20,15 @@ input CreatePostInput {
   creatorPostId: Int!
   post: String!
 }
+
+input UpdatePostInput {
+  id: Int!
+  post: String!
+}
+
+input DeletePostInput {
+  id: Int!
+}
 `;
 
 export const queries = `
@@ -28,4 +38,6 @@ export const queries = `
 
 export const mutations = `
   createPost(input: CreatePostInput!): Post!
+  updatePost(input: UpdatePostInput!): Post!
+  deletePost(input: DeletePostInput!): Int!
 `;

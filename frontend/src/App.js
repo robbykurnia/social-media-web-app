@@ -5,7 +5,7 @@ import NavBar from "./components/navBar";
 import NotFound from "./components/notFound";
 import Intro from "./components/intro";
 import Feed from "./components/feed";
-import Profile from "./components/profile";
+import Profile from "./components/profileNew";
 import Login from "./components/login";
 import Logout from "./components/logout";
 import Register from "./components/register";
@@ -16,13 +16,6 @@ class App extends Component {
     super(props);
     this.state = { user: service.getCurrentUser() };
   }
-  // state = {};
-
-  // componentDidMount() {
-  // const user = service.getCurrentUser();
-  // this.setState({ user });
-  //   console.log("username di CDM: ", this.state.user);
-  // }
 
   render() {
     const { user } = this.state;
@@ -33,8 +26,6 @@ class App extends Component {
         <br />
         <div className="container">
           <Switch>
-            {/* <Route path="/profile/:username?" exact component={Profile} /> */}
-            {/* <Route path="/feed" exact component={Feed} /> */}
             <Route
               path="/profile/:username?"
               render={props => <Profile {...props} user={user} />}

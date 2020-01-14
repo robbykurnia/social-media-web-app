@@ -23,6 +23,20 @@ table {
 
 td {
   word-break: break-all;
+  white-space: pre-wrap;
+}
+
+td.comment-form {
+  width: 1000px;
+}
+
+textarea {
+  resize: none !important;
+}
+
+textarea:focus,
+input:focus {
+  outline: none !important;
 }
 
 .navbar-brand {
@@ -33,7 +47,6 @@ td {
 .post-photo {
   height: 38px;
   width: 38px;
-  background-color: rgb(25, 42, 87);
   border-radius: 50%;
   display: inline-block;
 }
@@ -48,20 +61,37 @@ td {
   text-align: justify;
   font-size: 14px;
 }
+
+.post-form {
+  /* height: 300px; */
+  /* width: 300px; */
+  border: none !important;
+  /* width: 700px; */
+}
+
 .comment-photo {
-  height: 30px;
-  width: 30px;
-  background-color: rgb(153, 24, 74);
+  height: 27px;
+  width: 27px;
   border-radius: 50%;
   display: inline-block;
 }
 .comment-message {
   text-align: justify;
   border-radius: 18px !important;
-  font-size: 13px;
-  background-color: #f2f3f5;
+  font-size: 13px !important;
+  background-color: #f2f3f5 !important;
 }
 
+.comment-form {
+  /* height: 300px; */
+  /* width: 300px; */
+  border: none !important;
+  /* width: 700px; */
+}
+
+.ellipsis{
+  cursor: pointer;
+}
 /* .btn-light {
   background-color: white !important;
   border-color: white !important;

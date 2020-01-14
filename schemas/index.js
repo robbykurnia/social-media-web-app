@@ -1,3 +1,4 @@
+import * as Like from "./like";
 import * as Comment from "./comment";
 import * as Post from "./post";
 import * as User from "./user";
@@ -7,7 +8,7 @@ const inputs = [];
 const queries = [];
 const mutations = [];
 
-const schemas = [Comment, Post, User];
+const schemas = [Comment, Post, User, Like];
 
 schemas.forEach(schema => {
   types.push(schema.types);

@@ -7,6 +7,7 @@ type User {
   updatedAt: String!
   posts: [Post!]!
   comments: [Comment!]!
+  likes: [Like!]!
 }
 `;
 

@@ -73,13 +73,9 @@ class Register extends Component {
           const errorMessage = user.errors[0].message;
           return SwalAlert.warning(errorMessage, "warning");
         } else {
-          const data = user.data.login.split(" ");
-          const jwt = JSON.stringify(data[0]);
-          const username = JSON.stringify(data[1]);
-          const email = JSON.stringify(data[2]);
+          const data = JSON.stringify(user.data.login).split(" ");
+          const jwt = data[1];
           console.log(jwt);
-          console.log(username);
-          console.log(email);
           localStorage.setItem(tokenKey, jwt);
           return (window.location = "/feed");
         }
@@ -96,7 +92,9 @@ class Register extends Component {
             className="form-control"
             id="email"
             placeholder="Email"
+            autoComplete="username"
             ref={this.email}
+            autoFocus
             required
           />
         </div>
@@ -107,7 +105,7 @@ class Register extends Component {
             className="form-control"
             id="username"
             placeholder="Username"
-            autoComplete="username"
+            autoComplete="off"
             ref={this.username}
             required
           />

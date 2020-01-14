@@ -6,7 +6,10 @@ export default (sequelize, DataTypes) => {
   Post.associate = models => {
     Post.hasMany(models.Comment, {
       foreignKey: "postId"
-    });
+    }),
+      Post.hasMany(models.Like, {
+        foreignKey: "postId"
+      });
   };
 
   return Post;

@@ -16,15 +16,15 @@ class Login extends Component {
     this.password = React.createRef();
   }
 
-  state = { disabled: true, isLoading: false };
+  state = { disabledButton: true, isLoading: false };
 
   handleChange = () => {
     const email = this.email.current.value;
     const password = this.password.current.value;
 
     if (email.length !== 0 && password.length !== 0)
-      this.setState({ disabled: false });
-    else this.setState({ disabled: true });
+      this.setState({ disabledButton: false });
+    else this.setState({ disabledButton: true });
   };
 
   handleSubmit = event => {
@@ -101,7 +101,7 @@ class Login extends Component {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={this.state.disabled}
+          disabled={this.state.disabledButton}
         >
           Submit
         </button>

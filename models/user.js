@@ -15,6 +15,9 @@ export default (sequelize, DataTypes) => {
     }),
       User.hasMany(models.Comment, {
         foreignKey: "creatorCommentId"
+      }),
+      User.hasMany(models.Like, {
+        foreignKey: "creatorLikesId"
       });
   };
 

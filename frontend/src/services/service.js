@@ -1,43 +1,22 @@
 import jwtDecode from "jwt-decode";
-
 import { apiUrl } from "../config.json";
+
 const tokenKey = "token";
 const urlEndPoint = apiUrl;
 
-// export async function login(email, password) {
-//   const requestBody = {
-//     query: `
-//       mutation{
-//         login(input:{email:"${email}", password:"${password}"})
-//       }
-//     `
-//   };
+function fetchData(requestBody) {
+  return fetch(urlEndPoint, {
+    method: "POST",
+    body: JSON.stringify(requestBody),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: localStorage.getItem(tokenKey)
+    }
+  });
+}
 
-//   const data = await fetch(urlEndPoint, {
-//     method: "POST",
-//     body: JSON.stringify(requestBody),
-//     headers: {
-//       "Content-Type": "application/json"
-//     }
-//   })
-//     .then(res => {
-//       return res.json();
-//     })
-//     .then(user => {
-//       if (user.errors) {
-//         return alert(JSON.stringify(user.errors[0].message));
-//       } else {
-//         localStorage.setItem(tokenKey, JSON.stringify(user.data.login));
-//         return (window.location = "/");
-//       }
-//     });
-//   console.log("data:", data);
-//   return data;
-// }
-
-// getFeeds(this.props.match.params.username)
-
-export function getFeeds(propsUsername) {
+// Later, I'll only using user.id as parameter.
+export function getPosts(propsUsername) {
   const username = JSON.stringify(propsUsername);
   const requestBody = {
     query: `
@@ -48,11 +27,46 @@ export function getFeeds(propsUsername) {
             posts {
               id
               post
-              creatorPost{
+              createdAt
+              comments {
+                id
+              }
+              likes {
+                id
+                like
+                postId
+                creatorLikesId
+              }
+              creatorPost {
                 username
+                id
+              }
+            }
+          }
+        }
+      `
+  };
+
+  return fetchData(requestBody);
+}
+
+// Later, I'll only using user.id as parameter.
+export function getCommentsLikes(propsUsername) {
+  const username = JSON.stringify(propsUsername);
+  const requestBody = {
+    query: `
+        query{
+          getUser(input:{username:${username}}) {
+            posts {
+              likes {
+                id
+                like
+                postId
+                creatorLikesId
               }
               comments {
                 id
+                postId
                 comment
                 creatorComment {
                   id
@@ -65,21 +79,100 @@ export function getFeeds(propsUsername) {
       `
   };
 
-  fetch(urlEndPoint, {
-    method: "POST",
-    body: JSON.stringify(requestBody),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  })
-    .then(res => {
-      return res.json();
-    })
-    .then(data => {
-      const feed = data.data.getUser;
-      this.setState({ posts: feed.posts });
-      console.log("this.state.posts.posts: ", this.state.posts);
-    });
+  return fetchData(requestBody);
+}
+
+export function createPost(propsUserId, message) {
+  const requestBody = {
+    query: `
+      mutation{
+        createPost(input:{creatorPostId:${propsUserId}, post:
+"""
+${message}
+"""}) {
+          id
+          post
+          createdAt
+          creatorPost {
+            username
+            id
+          }
+          likes {
+            id
+            like
+            postId
+            creatorLikesId
+          }
+        }
+      }
+    `
+  };
+
+  return fetchData(requestBody);
+}
+
+export function createComment(propsUserId, postId, message) {
+  const requestBody = {
+    query: `
+      mutation{
+        createComment(input:{creatorCommentId:${propsUserId},postId:${postId}, comment:
+"""
+${message}
+"""}) {
+          id
+          comment
+          postId
+          creatorComment {
+            id
+            username
+          }
+        }
+      }
+    `
+  };
+
+  return fetchData(requestBody);
+}
+export function updateOrCreateLike(propsUserId, postId, like) {
+  const requestBody = {
+    query: `
+      mutation {
+        updateOrCreateLike(input: 
+        { like: ${like}, postId: ${postId}, creatorLikesId: ${propsUserId} }) {
+          id
+          like
+          postId
+          creatorLikesId
+        }
+      }
+    `
+  };
+
+  return fetchData(requestBody);
+}
+
+export function deletePost(id) {
+  const requestBody = {
+    query: `
+        mutation{
+          deletePost(input:{id:${id}})
+        }
+      `
+  };
+
+  return fetchData(requestBody);
+}
+
+export function deleteComment(id) {
+  const requestBody = {
+    query: `
+        mutation{
+          deleteComment(input:{id:${id}})
+        }
+      `
+  };
+
+  return fetchData(requestBody);
 }
 
 export function getCurrentUser() {
@@ -97,7 +190,11 @@ export function logout() {
 }
 
 export default {
-  getFeeds,
+  deletePost,
+  createPost,
+  createComment,
+  getPosts,
+  getCommentsLikes,
   getCurrentUser,
   logout
   // login,

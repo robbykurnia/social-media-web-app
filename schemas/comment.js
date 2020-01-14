@@ -20,6 +20,15 @@ input CreateCommentInput {
   creatorCommentId: Int!
   comment: String!
 }
+
+input UpdateCommentInput {
+  id: Int!
+  comment: String!
+}
+
+input DeleteCommentInput {
+  id: Int!
+}
 `;
 
 export const queries = `
@@ -29,4 +38,6 @@ export const queries = `
 
 export const mutations = `
   createComment(input: CreateCommentInput!): Comment!
+  updateComment(input: UpdateCommentInput!): Comment!
+  deleteComment(input: DeleteCommentInput!): Int!
 `;

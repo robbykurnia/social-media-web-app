@@ -7,7 +7,8 @@ const sequelize = new Sequelize("my_graphql_db_2", "postgres", "postgres", {
 const db = {
   User: sequelize.import("./user"),
   Post: sequelize.import("./post"),
-  Comment: sequelize.import("./comment")
+  Comment: sequelize.import("./comment"),
+  Like: sequelize.import("./like")
 };
 
 Object.keys(db).forEach(models => {

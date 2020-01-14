@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import _ from "lodash";
 import { apiUrl } from "../config.json";
 import service from "../services/service";
 import ProfileNotFound from "./common/profileNotFound";
+import CommentForm from "./commentForm";
 
 const urlEndPoint = apiUrl;
 const tokenKey = "token";
@@ -11,9 +13,13 @@ class Profile extends Component {
   constructor(props) {
     super(props);
     this.createPost = React.createRef();
+    this.createComment = React.createRef();
+    this.message = [];
     this.state = {
       posts: [],
-      showCreatePost: false
+      showCreatePost: false,
+      commentInput: "",
+      commentId: { 3: "", 4: "", 6: "" }
     };
   }
   // For jquery
@@ -63,11 +69,14 @@ class Profile extends Component {
 
   handleCreatePost = event => {
     event.preventDefault();
-    let message = this.createPost.current.value;
+    // let messagePost = this.createPost.current.value;
+    let messagePost = this.createPost.current.value;
+    console.log("messagePost: ", messagePost);
+    if (messagePost.length === 0) return;
     const requestBody = {
       query: `
           mutation{
-            createPost(input:{creatorPostId:${this.props.user.user.id}, post:"${message}"})
+            createPost(input:{creatorPostId:${this.props.user.user.id}, post:"""${messagePost}"""})
             {
               id
               post
@@ -120,6 +129,79 @@ class Profile extends Component {
       });
   };
 
+  handleChangeComment = ({ currentTarget }) => {
+    const commentInputs = { ...this.state.commentInput };
+    commentInputs[currentTarget.name] = currentTarget.value;
+    const inputs = this.message.concat(commentInputs[currentTarget.name]);
+    // this.setState({ commentInput });
+    console.log("currentTarget.name:", currentTarget.name);
+    console.log("inputs:", inputs);
+    console.log(commentInputs[currentTarget.name]);
+    this.setState({ commentInput: inputs });
+  };
+
+  handleCreateComment = event => {
+    event.preventDefault();
+    console.log("submitted");
+    console.log("this.state.commentInput:", this.state.commentInput[0]);
+    return;
+    // if (messageComment.length === 0) return;
+    // const requestBody = {
+    //   query: `
+    //       mutation{
+    //         createPost(input:{creatorPostId:${this.props.user.user.id}, post:"""${messageComment}"""})
+    //         {
+    //           id
+    //           post
+    //           creatorPost{
+    //             username
+    //           }
+    //           comments {
+    //             id
+    //             comment
+    //             creatorComment {
+    //               id
+    //               username
+    //             }
+    //           }
+    //         }
+    //       }
+    //     `
+    // };
+
+    // fetch(urlEndPoint, {
+    //   method: "POST",
+    //   body: JSON.stringify(requestBody),
+    //   headers: {
+    //     Accept: "application/json",
+    //     "Content-Type": "application/json",
+    //     Authorization: localStorage.getItem(tokenKey)
+    //   }
+    // })
+    //   .then(res => {
+    //     console.log("res: ", res);
+    //     if (res.ok === false) {
+    //       // segera diganti dengan toastify
+    //       console.log(res.statusText);
+    //     }
+    //     return res.json();
+    //   })
+    //   .then(data => {
+    //     console.log("data:", data);
+    //     // jika message telah di post dan telah berhasil dimasukkan kedalam database,
+    //     // maka tutup model (bersihkan text), dan refetch data.
+    //     // jika tidak berhasil buat toastify untuk pemberitahuan pesan gagal dikirim
+    //     // NOTE: belum ditambahkan tutup model setelah berhasil mengirim message
+    //     const feed = data.data.createPost;
+    //     this.setState({ nextPosts: this.state.posts.push(feed) });
+    //     this.createPost.current.value = null;
+
+    //     console.log("this.state.posts: ", this.state.posts);
+    //     console.log("this.state.nextPosts: ", this.state.nextPosts);
+    //     return;
+    //   });
+  };
+
   getFeeds = () => {
     const username = JSON.stringify(this.props.match.params.username);
     const requestBody = {
@@ -165,7 +247,7 @@ class Profile extends Component {
           const feed = data.data.getUser;
           this.setState({ usernameThisProfile: feed.username });
           this.setState({ posts: feed.posts });
-          console.log("this.state.posts.posts: ", this.state.posts);
+          console.log("this.state.posts: ", this.state.posts);
         } catch (error) {
           return this.setState({ NotFound: true });
         }
@@ -173,7 +255,24 @@ class Profile extends Component {
   };
 
   render() {
-    console.log();
+    const setString = (item, value) => {
+      const max = item.length;
+      for (let i = 0; i <= max; i++) {
+        console.log((item[i] = value));
+      }
+    };
+    const commentFormId = this.state.posts.map(post => post.id);
+    const commentFormId2 = [...commentFormId];
+    console.log("commentFormId:", commentFormId);
+    console.log("commentFormId2:", commentFormId2);
+    console.log(
+      "this.state.posts.id:",
+      this.state.posts.map(post => post.id)
+    );
+    console.log("this.state:", this.state);
+    const commentFormIdInvert = _.invert(commentFormId);
+    console.log("commentFormIdInvert:", commentFormIdInvert);
+    console.log("setString:", setString(commentFormIdInvert, ""));
     return (
       <React.Fragment>
         {this.state.NotFound && (
@@ -280,11 +379,13 @@ class Profile extends Component {
                     {post.post}
                   </td>
                 </tr>
-                <tr className="d-flex border-bottom border-top">
+                <tr className="d-flex border-bottom border-top mb-2">
                   <td className="w-100">
                     <button
                       type="button"
                       className="btn btn-light rounded-0 float-left w-50"
+                      // data-toggle="modal"
+                      // data-target={`#comment${post.id}`}
                     >
                       Comment
                     </button>
@@ -296,10 +397,11 @@ class Profile extends Component {
                     </button>
                   </td>
                 </tr>
+
                 {post.comments.length > 0 &&
                   post.comments.map(comment => (
                     <tr
-                      className="d-flex align-items-center mt-2 mb-2"
+                      className="d-flex align-items-center mb-2"
                       key={comment.id}
                     >
                       <td className="border-0 d-flex flex-column align-self-start">
@@ -318,6 +420,28 @@ class Profile extends Component {
                       </td>
                     </tr>
                   ))}
+                <tr className="d-flex align-items-center">
+                  <td className="border-0 d-flex flex-column align-self-start">
+                    <Link
+                      // to={`/profile/${comment.creatorComment.username}`}
+                      className="comment-photo mr-2"
+                    ></Link>
+                  </td>
+                  <td className="comment-form">
+                    <form onSubmit={this.handleCreateComment}>
+                      <textarea
+                        type="text"
+                        className="comment-message comment-form pr-2 pl-2 pt-1 pb-1 form-control"
+                        id={`comment${post.id}`}
+                        placeholder="Write Comment"
+                        name={`comment${post.id}`}
+                        value={this.state.commentInput}
+                        onChange={this.handleChangeComment}
+                        autoComplete="off"
+                      ></textarea>
+                    </form>
+                  </td>
+                </tr>
               </tbody>
             ))
           ).reverse()}

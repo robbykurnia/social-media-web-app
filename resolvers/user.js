@@ -6,14 +6,34 @@ import Sequelize from "sequelize";
 const Op = Sequelize.Op;
 
 export const nested = {
-  posts: ({ id }, args, { models }) =>
-    models.Post.findAll({
-      where: { creatorPostId: id }
-    }),
+  // posts: ({ id }, args, { models }) =>
+  //   models.Post.findAll({
+  //     where: { creatorPostId: id }
+  //   }),
+  posts: ({ id }, args, { postLoader }) => postLoader.load(id),
   comments: ({ id }, args, { models }) =>
     models.Comment.findAll({
       where: { creatorCommentId: id }
+    }),
+  likes: ({ id }, args, { models }) =>
+    models.Like.findAll({
+      where: { creatorLikesId: id }
     })
+  // comments: ({ id }, args, { commentLoader }) => commentLoader.load(id)
+};
+
+export const batchPosts = async (keys, { Post }) => {
+  const posts = await Post.findAll({
+    raw: true,
+    where: {
+      creatorPostId: {
+        [Op.in]: keys
+      }
+    }
+  });
+
+  const groupPosts = _.groupBy(posts, "creatorPostId");
+  return keys.map(key => groupPosts[key] || []);
 };
 
 export const queries = {
@@ -94,7 +114,7 @@ export const mutations = {
     const token = jwt.sign(
       { user: _.pick(user, ["id", "username", "email"]) },
       jwtSecretKey,
-      { expiresIn: "1h" }
+      { expiresIn: "1y" }
     );
 
     // return token;

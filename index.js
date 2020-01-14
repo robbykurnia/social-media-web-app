@@ -3,10 +3,14 @@ import bodyParser from "body-parser";
 import { graphiqlExpress, graphqlExpress } from "apollo-server-express";
 import { makeExecutableSchema } from "graphql-tools";
 import cors from "cors";
+import DataLoader from "dataloader";
+import _ from "lodash";
+import models from "./models";
 import auth from "./middleware/auth";
 import typeDefs from "./schemas/index";
 import resolvers from "./resolvers/index";
-import models from "./models";
+import { batchPosts } from "./resolvers/user";
+import { batchComments, batchLikes } from "./resolvers/post";
 
 const app = express();
 const port = 4000;
@@ -24,7 +28,15 @@ app.use(
   bodyParser.json(),
   graphqlExpress((req, res) => ({
     schema,
-    context: { models, jwtSecretKey, req, res }
+    context: {
+      models,
+      jwtSecretKey,
+      req,
+      res,
+      postLoader: new DataLoader(keys => batchPosts(keys, models)),
+      commentLoader: new DataLoader(keys => batchComments(keys, models)),
+      likeLoader: new DataLoader(keys => batchLikes(keys, models))
+    }
   }))
 );
 
