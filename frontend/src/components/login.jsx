@@ -59,12 +59,8 @@ class Login extends Component {
         } else {
           const data = JSON.stringify(user.data.login).split(" ");
           const jwt = data[1];
-          console.log(jwt);
           localStorage.setItem(tokenKey, jwt);
           return (window.location = "/feed");
-          // const jwt = JSON.stringify(user.data.login);
-          // localStorage.setItem(tokenKey, jwt);
-          // return (window.location = "/feed");
         }
       });
   };

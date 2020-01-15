@@ -1,9 +1,20 @@
 import jwtDecode from "jwt-decode";
 import { apiUrl } from "../config.json";
+import SwalAlert from "../services/SwalAlert";
 
 const tokenKey = "token";
 const urlEndPoint = apiUrl;
 
+// function fetchData(requestBody) {
+//   return fetch(urlEndPoint, {
+//     method: "POST",
+//     body: JSON.stringify(requestBody),
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: localStorage.getItem(tokenKey)
+//     }
+//   });
+// }
 function fetchData(requestBody) {
   return fetch(urlEndPoint, {
     method: "POST",
@@ -12,6 +23,12 @@ function fetchData(requestBody) {
       "Content-Type": "application/json",
       Authorization: localStorage.getItem(tokenKey)
     }
+  }).then(res => {
+    console.log("res di service", res);
+    if (res.status >= 400 && res.status < 500) {
+      return SwalAlert.warning(`${res.status} ${res.statusText}`, "error");
+    }
+    return res.json();
   });
 }
 

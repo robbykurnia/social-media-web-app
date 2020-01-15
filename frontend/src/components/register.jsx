@@ -68,14 +68,12 @@ class Register extends Component {
         return res.json();
       })
       .then(user => {
-        console.log("user:  ", user);
         if (user.errors) {
           const errorMessage = user.errors[0].message;
           return SwalAlert.warning(errorMessage, "warning");
         } else {
           const data = JSON.stringify(user.data.login).split(" ");
           const jwt = data[1];
-          console.log(jwt);
           localStorage.setItem(tokenKey, jwt);
           return (window.location = "/feed");
         }
