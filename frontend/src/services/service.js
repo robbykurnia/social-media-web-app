@@ -25,39 +25,22 @@ function fetchData(requestBody) {
     }
   }).then(res => {
     console.log("res di service", res);
-    if (res.status >= 400 && res.status < 500) {
-      return SwalAlert.warning(`${res.status} ${res.statusText}`, "error");
-    }
+    // if (res.status >= 400 && res.status < 500) {
+    //   return SwalAlert.warning(`${res.status} ${res.statusText}`, "error");
+    // }
     return res.json();
   });
 }
 
-// Later, I'll only using user.id as parameter.
-export function getPosts(propsUsername) {
+export function getPostLastId(propsUsername) {
   const username = JSON.stringify(propsUsername);
   const requestBody = {
     query: `
         query{
           getUser(input:{username:${username}}) {
             id
-            username
             posts {
               id
-              post
-              createdAt
-              comments {
-                id
-              }
-              likes {
-                id
-                like
-                postId
-                creatorLikesId
-              }
-              creatorPost {
-                username
-                id
-              }
             }
           }
         }
@@ -68,13 +51,19 @@ export function getPosts(propsUsername) {
 }
 
 // Later, I'll only using user.id as parameter.
-export function getCommentsLikes(propsUsername) {
+export function getPosts(propsUsername, lastId) {
   const username = JSON.stringify(propsUsername);
+  const cursor = lastId ? lastId : null;
   const requestBody = {
     query: `
         query{
           getUser(input:{username:${username}}) {
-            posts {
+            id
+            username
+            somePosts (limit:10, cursor: ${cursor}) {
+              id
+              post
+              createdAt
               likes {
                 id
                 like
@@ -90,6 +79,10 @@ export function getCommentsLikes(propsUsername) {
                   username
                 }
               }
+              creatorPost {
+                username
+                id
+              }
             }
           }
         }
@@ -98,6 +91,39 @@ export function getCommentsLikes(propsUsername) {
 
   return fetchData(requestBody);
 }
+
+// using later
+// export function getCommentsLikes(propsUsername, lastId) {
+//   const username = JSON.stringify(propsUsername);
+//   const cursor = lastId ? lastId : null;
+//   const requestBody = {
+//     query: `
+//         query{
+//           getUser(input:{username:${username}}) {
+//             somePosts (limit:10, cursor:${cursor}) {
+//               likes {
+//                 id
+//                 like
+//                 postId
+//                 creatorLikesId
+//               }
+//               comments {
+//                 id
+//                 postId
+//                 comment
+//                 creatorComment {
+//                   id
+//                   username
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       `
+//   };
+
+//   return fetchData(requestBody);
+// }
 
 export function createPost(propsUserId, message) {
   const requestBody = {
@@ -211,7 +237,7 @@ export default {
   createPost,
   createComment,
   getPosts,
-  getCommentsLikes,
+  // getCommentsLikes,
   getCurrentUser,
   logout
   // login,

@@ -6,6 +6,7 @@ type User {
   createdAt: String!
   updatedAt: String!
   posts: [Post!]!
+  somePosts(limit: Int!, cursor:Int): [Post!]!
   comments: [Comment!]!
   likes: [Like!]!
 }

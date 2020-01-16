@@ -10,7 +10,10 @@ export const nested = {
   //   models.Post.findAll({
   //     where: { creatorPostId: id }
   //   }),
+  // posts yang bener yg bawah
   posts: ({ id }, args, { postLoader }) => postLoader.load(id),
+  somePosts: ({ id }, { limit, cursor }, { somePostLoader }) =>
+    somePostLoader.load({ id, limit, cursor }),
   comments: ({ id }, args, { models }) =>
     models.Comment.findAll({
       where: { creatorCommentId: id }
@@ -20,6 +23,51 @@ export const nested = {
       where: { creatorLikesId: id }
     })
   // comments: ({ id }, args, { commentLoader }) => commentLoader.load(id)
+};
+
+export const someBatchPosts = async (keys, { Post }) => {
+  console.log("\n\nkeys atas :", keys, "\n\n\n");
+
+  const cursor = keys[0].cursor;
+  const limit = keys[0].limit;
+  keys = [keys[0].id];
+  // problem
+  // 1. firstCall === true -> call query without cursor
+  // 2. (cursor === true) = not firstCall
+  const posts = await Post.findAll({
+    limit,
+    raw: true,
+    where: {
+      [Op.and]: [
+        {
+          creatorPostId: {
+            [Op.in]: keys
+          }
+        },
+        { id: { [Op.lt]: cursor } }
+      ]
+    },
+    order: [["id", "DESC"]]
+  });
+
+  if (!cursor) {
+    const firstPosts = await Post.findAll({
+      limit,
+      raw: true,
+      where: {
+        creatorPostId: {
+          [Op.in]: keys
+        }
+      },
+      order: [["id", "DESC"]]
+    });
+
+    const groupPosts = _.groupBy(firstPosts, "creatorPostId");
+    return keys.map(key => groupPosts[key] || []);
+  }
+
+  const groupPosts = _.groupBy(posts, "creatorPostId");
+  return keys.map(key => groupPosts[key] || []);
 };
 
 export const batchPosts = async (keys, { Post }) => {
@@ -56,7 +104,8 @@ export const queries = {
   },
   searchUsername: (parent, { input: { username } }, { models }) =>
     models.User.findAll({
-      where: { username: { [Op.substring]: username } }
+      where: { username: { [Op.regexp]: username } }
+      // where: { username: { [Op.substring]: username } }
       // ,order: [["username", "DESC"]]
     })
 };

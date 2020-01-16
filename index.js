@@ -9,7 +9,7 @@ import models from "./models";
 import auth from "./middleware/auth";
 import typeDefs from "./schemas/index";
 import resolvers from "./resolvers/index";
-import { batchPosts } from "./resolvers/user";
+import { batchPosts, someBatchPosts } from "./resolvers/user";
 import { batchComments, batchLikes } from "./resolvers/post";
 
 const app = express();
@@ -34,6 +34,7 @@ app.use(
       req,
       res,
       postLoader: new DataLoader(keys => batchPosts(keys, models)),
+      somePostLoader: new DataLoader(keys => someBatchPosts(keys, models)),
       commentLoader: new DataLoader(keys => batchComments(keys, models)),
       likeLoader: new DataLoader(keys => batchLikes(keys, models))
     }

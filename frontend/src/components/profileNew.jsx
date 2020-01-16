@@ -4,7 +4,6 @@ import ProfileFeed from "./profileFeed";
 import ProfileNotFound from "./common/profileNotFound";
 import {
   getPosts,
-  getCommentsLikes,
   createPost,
   createComment,
   deletePost,
@@ -22,7 +21,8 @@ class Profile extends Component {
       likes: [],
       showCreatePost: false,
       reset: false,
-      disablePostButton: true
+      disablePostButton: true,
+      lastId: null
     };
   }
 
@@ -36,7 +36,7 @@ class Profile extends Component {
     }
     this.showCreatePost();
     this.handleGetPosts();
-    this.handleGetCommentsLikes();
+    // this.handleGetCommentsLikes();
     window.scrollTo(0, 0);
   }
 
@@ -48,6 +48,7 @@ class Profile extends Component {
       console.log("call componentDidUpdate different user");
       this.setState({ posts: [] });
       this.setState({ usernameThisProfile: null });
+      this.setState({ lastId: null });
       return this.componentDidMount();
     }
   }
@@ -65,12 +66,13 @@ class Profile extends Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     // re-fetching data in current page with same user (not full reload)
     if (nextProps.location.state === this.props.match.params.username) {
+      this.setState({ lastId: null });
       console.log("call componentWillReceiveProps");
       return this.componentDidMount();
     }
   }
 
-  // FIX & little bit change
+  // FIX
   showCreatePost = () => {
     if (!this.props.user) return this.setState({ showCreatePost: false });
     this.props.user.user.username === this.props.match.params.username
@@ -78,20 +80,77 @@ class Profile extends Component {
       : this.setState({ showCreatePost: false });
   };
 
+  // handleGetPostLastId = () => {
+  //   getPostLastId(this.props.match.params.username).then(data => {
+  //     console.log("\n\n\n\n\n\n\n\n\n data", data);
+  //     try {
+  //       const feeds = data.data.getUser;
+  //       const lastId = feeds.posts[feeds.posts.length - 1];
+  //       return this.setState({ lastId });
+  //     } catch (error) {
+  //       return this.setState({ NotFound: true });
+  //     }
+  //   });
+  // };
+
   // FIX
   handleGetPosts = () => {
-    getPosts(this.props.match.params.username).then(data => {
+    getPosts(this.props.match.params.username, this.state.lastId).then(data => {
       console.log("data:", data);
       try {
+        // add older post
+        // kondisi
+        // 1. post:
+        //      1. post telah tesedia
+        //      2. property iconLikes telah tersedia
+        //      3. older post belum di push
+        // 2. problem:
+        //      state post sudah memiliki property iconLikes,
+        //      sedangkan new feeds belum memiliki iconLikes
+        // 3. solving:
+        //      1. clone state post
+        //      2. add propery iconLikes di new feeds
+        //      3. push new feeds ke clone state post
+        //      4. setState clone state post
         const feeds = data.data.getUser;
+        const posts = data.data.getUser.somePosts;
+        const comments = data.data.getUser.somePosts;
+        const likes = data.data.getUser.somePosts;
+        const bankPosts = [this.state.posts];
+        const bankComment = [];
+        const bankLike = [];
+        const olderPosts = [];
+        const index = feeds.somePosts.length - 1;
+        const limit = 10;
+        const disableLoad =
+          posts.length < limit
+            ? this.setState({ disableLoad: true })
+            : this.setState({ disableLoad: false });
+        comments.map(c => c.comments.map(item => bankComment.push(item)));
+        likes.map(l => l.likes.map(item => bankLike.push(item)));
+
         this.setState({ usernameThisProfile: feeds.username });
         this.setState({ idThisProfile: feeds.id });
-        this.setState({ posts: feeds.posts });
-        const posts = [...this.state.posts];
+        // this.setState({ posts: feeds.somePosts }); // letakkan setelah new output memilikin propery iconLikes
+        this.setState({ comments: bankComment });
+        this.setState({ likes: bankLike });
+        const lastId =
+          posts.length > 0
+            ? this.setState({
+                lastId: feeds.somePosts[index].id
+              })
+            : null;
+
+        // this.setState({
+        //   lastId: feeds.somePosts[feeds.somePosts.length - 1].id
+        // });
+
+        // add property iconLikes
+        // const posts = [...this.state.posts];
         const icon = [
           ...posts.map(post => {
             const groupLikes = _.groupBy(post.likes, "creatorLikesId");
-            console.log("groupLikes:", groupLikes);
+
             if (groupLikes[this.props.user.user.id]) {
               const isLike = groupLikes[this.props.user.user.id][0].like;
               return { ...post, iconLikes: isLike };
@@ -101,44 +160,41 @@ class Profile extends Component {
             }
           })
         ];
-        this.setState({ posts: icon });
-        console.log("\n\n\n\n\n\n\n\nicon di getpsot:", icon);
-        // const indexStatePosts = _.findIndex(posts, post);
-        // const objStatePostsLikes = _.groupBy(
-        //   posts[indexStatePosts].likes,
-        //   "creatorLikesId"
-        // )[this.props.user.user.id];
-        // console.log("objStatePostsLikes:", objStatePostsLikes);
-        // const indexStatePostsLikes = objStatePostsLikes
-        //   ? _.findIndex(posts[indexStatePosts].likes, objStatePostsLikes[0])
-        //   : console.log("objStatePostsLikes not found");
-        // console.log("indexStatePostsLikes:", indexStatePostsLikes);
+        if (bankPosts.length !== 0) {
+          bankPosts[0].map(post => olderPosts.push(post));
+        }
+        icon.map(i => olderPosts.push(i));
+        this.setState({ posts: olderPosts });
       } catch (error) {
+        throw error;
         return this.setState({ NotFound: true });
       }
     });
   };
 
-  // FIX
-  handleGetCommentsLikes = () => {
-    getCommentsLikes(this.props.match.params.username).then(data => {
-      console.log("data:", data);
-      try {
-        const comments = data.data.getUser.posts;
-        const likes = data.data.getUser.posts;
-        const bankComment = [];
-        const bankLike = [];
-        comments.map(c => c.comments.map(item => bankComment.push(item)));
-        likes.map(l => l.likes.map(item => bankLike.push(item)));
-        this.setState({ comments: bankComment });
-        this.setState({ likes: bankLike });
-      } catch (error) {
-        return this.setState({ NotFound: true });
-      }
-    });
-  };
+  // using later
+  // handleGetCommentsLikes = () => {
+  //   getCommentsLikes(this.props.match.params.username, this.state.lastId).then(
+  //     data => {
+  //       console.log("data:", data);
+  //       try {
+  //         const comments = data.data.getUser.somePosts;
+  //         const likes = data.data.getUser.somePosts;
+  //         const bankComment = [];
+  //         const bankLike = [];
 
-  // FIX
+  //         comments.map(c => c.comments.map(item => bankComment.push(item)));
+  //         likes.map(l => l.likes.map(item => bankLike.push(item)));
+
+  //         this.setState({ comments: bankComment });
+  //         this.setState({ likes: bankLike });
+  //       } catch (error) {
+  //         return this.setState({ NotFound: true });
+  //       }
+  //     }
+  //   );
+  // };
+
   handleDeletePost = post => {
     // Using Pesimis
     deletePost(post.id).then(data => {
@@ -148,7 +204,7 @@ class Profile extends Component {
           this.setState({ posts });
         }
       } catch (error) {
-        throw new Error("data no found");
+        throw new Error("data not found");
       }
     });
   };
@@ -163,7 +219,7 @@ class Profile extends Component {
           this.setState({ comments });
         }
       } catch (error) {
-        throw new Error("data no found");
+        throw new Error("data not found");
       }
     });
   };
@@ -185,7 +241,7 @@ class Profile extends Component {
           const feed = data.data.createComment;
           this.setState({ nextComments: this.state.comments.push(feed) });
         } catch (error) {
-          throw new Error("data no found");
+          throw new Error("data not found");
         }
       });
 
@@ -207,6 +263,7 @@ class Profile extends Component {
     event.preventDefault();
     const propsUserId = this.props.user.user.id;
     const messageInput = this.createPostInput;
+    console.log("this.createPostInput:", this.createPostInput);
     const onlyWhiteSpace = !messageInput || !messageInput.match(/[\S]/);
     if (onlyWhiteSpace) return;
 
@@ -215,9 +272,11 @@ class Profile extends Component {
       try {
         const feed = data.data.createPost;
         const addIconLike = { ...feed, iconLikes: false };
-        this.setState({ nextPosts: this.state.posts.push(addIconLike) });
+
+        this.createPostInput = "";
+        this.setState({ nextPosts: this.state.posts.unshift(addIconLike) });
       } catch (error) {
-        throw new Error("data no found");
+        throw new Error("data not found");
       }
     });
 
@@ -227,112 +286,61 @@ class Profile extends Component {
 
   handleUpdateOrCreateLike = post => {
     const likes = [...this.state.likes];
-    console.log("likes:", likes);
-    console.log("post.likes:", post.likes);
+    const { id } = this.props.user.user;
+
     if (post.likes) {
       if (post.likes && post.likes.length > 0) {
-        // ada bug di likes.lenght > 0 dan post tersebut di like orang lain
-        // masalah ketika ingin mengganti likes yg terdapat pada state posts
-        // dengan menggunakan id sendiri, padahal disana hanya ada likes orag tersebut
-        // sehingga id yg digunakan menyebabkan error
-
         const posts = [...this.state.posts];
         const indexStatePosts = _.findIndex(posts, post);
-        // const objStatePostsLikes = _.groupBy(
-        //   posts[indexStatePosts].likes,
-        //   "creatorLikesId"
-        // )[this.props.user.user.id][0];
-        // const indexStatePostsLikes = _.findIndex(
-        //   posts[indexStatePosts].likes,
-        //   objStatePostsLike
-        // );
         const objStatePostsLikes = _.groupBy(
           posts[indexStatePosts].likes,
           "creatorLikesId"
-        )[this.props.user.user.id];
+        )[id];
         const indexStatePostsLikes = objStatePostsLikes
           ? _.findIndex(posts[indexStatePosts].likes, objStatePostsLikes[0])
           : null;
-        console.log("indexStatePostsLikes:", indexStatePostsLikes);
 
         const groupPostLikes = _.groupBy(post.likes, "creatorLikesId");
-        const alreadyLikes = groupPostLikes[this.props.user.user.id];
+        const alreadyLikes = groupPostLikes[id];
         if (alreadyLikes) {
           console.log("already likes");
           // fix ketika owner nya sudah pernah like
           const groupStateLike = _.groupBy(likes, "creatorLikesId");
-          const indexStateLike = _.findIndex(
-            groupStateLike[this.props.user.user.id],
-            { postId: post.id }
-          );
-          const objLikes =
-            groupStateLike[this.props.user.user.id][indexStateLike];
+          const indexStateLike = _.findIndex(groupStateLike[id], {
+            postId: post.id
+          });
+          const objLikes = groupStateLike[id][indexStateLike];
           const indexLikes = _.findIndex(likes, objLikes);
           const like = !objLikes.like;
-          updateOrCreateLike(this.props.user.user.id, post.id, like).then(
-            data => {
-              try {
-                const update = data.data.updateOrCreateLike;
-                const bankLikes = [...likes];
+          updateOrCreateLike(id, post.id, like).then(data => {
+            try {
+              const update = data.data.updateOrCreateLike;
+              const bankLikes = [...likes];
 
-                if (objStatePostsLikes) {
-                  posts[indexStatePosts].likes[indexStatePostsLikes] = update;
-                  posts[indexStatePosts].iconLikes = update.like;
-                  this.setState({ posts });
-                }
-                bankLikes[indexLikes] = update;
-                this.setState({ likes: bankLikes });
-                return;
-              } catch (error) {
-                throw new Error("data not found");
+              if (objStatePostsLikes) {
+                posts[indexStatePosts].likes[indexStatePostsLikes] = update;
+                posts[indexStatePosts].iconLikes = update.like;
+                this.setState({ posts });
               }
+
+              bankLikes[indexLikes] = update;
+              this.setState({ likes: bankLikes });
+              return;
+            } catch (error) {
+              throw new Error("data not found");
             }
-          );
+          });
         } else {
-          console.log("has not already likes");
           const posts = [...this.state.posts];
           const indexPosts = _.findIndex(posts, post);
-          console.log("indexPosts:", indexPosts);
           const like = true;
 
-          updateOrCreateLike(this.props.user.user.id, post.id, like).then(
-            data => {
-              try {
-                const update = data.data.updateOrCreateLike;
-                const bankLikes = likes.concat(update);
-
-                posts[indexPosts].likes[0] = update;
-                posts[indexStatePosts].iconLikes = update.like;
-
-                this.setState({ likes: bankLikes });
-                this.setState({ posts });
-                return;
-              } catch (error) {
-                throw new Error("data not found");
-              }
-            }
-          );
-        }
-        console.log("\n\n\npost.likes:", post.likes);
-        console.log(
-          "\n\n\n\n\ngroupPostLikes:",
-          groupPostLikes[this.props.user.user.id]
-        );
-        return;
-        // bug ketika owner nya belum pernah like dan likes > 0
-      } else {
-        console.log("else");
-        const posts = [...this.state.posts];
-        const indexStatePosts = _.findIndex(posts, post);
-        const like = true;
-
-        updateOrCreateLike(this.props.user.user.id, post.id, like).then(
-          data => {
+          updateOrCreateLike(id, post.id, like).then(data => {
             try {
               const update = data.data.updateOrCreateLike;
               const bankLikes = likes.concat(update);
 
-              posts[indexStatePosts].likes[0] = update;
+              posts[indexPosts].likes[0] = update;
               posts[indexStatePosts].iconLikes = update.like;
 
               this.setState({ likes: bankLikes });
@@ -341,8 +349,31 @@ class Profile extends Component {
             } catch (error) {
               throw new Error("data not found");
             }
+          });
+        }
+        return;
+        // bug ketika owner nya belum pernah like dan likes > 0
+      } else {
+        console.log("else");
+        const posts = [...this.state.posts];
+        const indexStatePosts = _.findIndex(posts, post);
+        const like = true;
+
+        updateOrCreateLike(id, post.id, like).then(data => {
+          try {
+            const update = data.data.updateOrCreateLike;
+            const bankLikes = likes.concat(update);
+
+            posts[indexStatePosts].likes[0] = update;
+            posts[indexStatePosts].iconLikes = update.like;
+
+            this.setState({ likes: bankLikes });
+            this.setState({ posts });
+            return;
+          } catch (error) {
+            throw new Error("data not found");
           }
-        );
+        });
       }
       return;
     }
@@ -365,14 +396,16 @@ class Profile extends Component {
         {!this.state.NotFound && this.props.user && (
           <ProfileFeed
             // props={this.props}
+            user={this.props.user.user}
             usernameThisProfile={this.state.usernameThisProfile}
             idThisProfile={this.state.idThisProfile}
-            user={this.props.user.user}
             showCreatePost={this.state.showCreatePost}
+            disableLoad={this.state.disableLoad}
             reset={this.state.reset}
             posts={this.state.posts}
             comments={this.state.comments}
             likes={this.state.likes}
+            handleGetPosts={this.handleGetPosts}
             handleDeletePost={this.handleDeletePost}
             handleDeleteComment={this.handleDeleteComment}
             handleUpdatePost={this.handleUpdatePost}
