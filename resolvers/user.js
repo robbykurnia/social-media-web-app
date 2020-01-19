@@ -10,7 +10,6 @@ export const nested = {
   //   models.Post.findAll({
   //     where: { creatorPostId: id }
   //   }),
-  // posts yang bener yg bawah
   posts: ({ id }, args, { postLoader }) => postLoader.load(id),
   somePosts: ({ id }, { limit, cursor }, { somePostLoader }) =>
     somePostLoader.load({ id, limit, cursor }),
@@ -26,14 +25,12 @@ export const nested = {
 };
 
 export const someBatchPosts = async (keys, { Post }) => {
-  console.log("\n\nkeys atas :", keys, "\n\n\n");
-
+  // console.log("\n\nkeys atas :", keys, "\n\n\n");
   const cursor = keys[0].cursor;
   const limit = keys[0].limit;
+
   keys = [keys[0].id];
-  // problem
-  // 1. firstCall === true -> call query without cursor
-  // 2. (cursor === true) = not firstCall
+
   const posts = await Post.findAll({
     limit,
     raw: true,

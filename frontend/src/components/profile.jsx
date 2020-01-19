@@ -1,451 +1,430 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 import _ from "lodash";
-import { apiUrl } from "../config.json";
-import service from "../services/service";
+import Feed from "./feed";
+import PostInput from "./common/postInput";
 import ProfileNotFound from "./common/profileNotFound";
-import CommentForm from "./commentForm";
-
-const urlEndPoint = apiUrl;
-const tokenKey = "token";
+import ProfileJumbotron from "./common/profileJumbotron";
+import {
+  getPosts,
+  createPost,
+  createComment,
+  deletePost,
+  deleteComment,
+  updateOrCreateLike
+} from "../services/service";
 
 class Profile extends Component {
   constructor(props) {
     super(props);
-    this.createPost = React.createRef();
-    this.createComment = React.createRef();
-    this.message = [];
+    this.createPostInput = "";
+    this.createCommentInput = "";
     this.state = {
       posts: [],
+      comments: [],
+      likes: [],
       showCreatePost: false,
-      commentInput: "",
-      commentId: { 3: "", 4: "", 6: "" }
+      reset: false,
+      disablePostButton: true,
+      lastId: null
     };
   }
-  // For jquery
-  // handleAutoFocus = () => {
-  //   $("#myModal").on("shown.bs.modal", function() {
-  //     $("#myInput").trigger("focus");
-  //   });
-  // };
+
+  handleOnClickCommentButton = post => {
+    // this.setState({ comment });
+    const posts = [...this.state.posts];
+    const indexPost = posts.indexOf(post);
+    posts[indexPost].commentsRow = !posts[indexPost].commentsRow;
+    this.setState({ posts });
+    console.log("comment on ", post);
+  };
 
   componentDidMount() {
+    // console.log("call componentDidMount()");
     if (!this.props.match.params.username) {
       if (this.props.user)
         return (window.location = `/profile/${this.props.user.user.username}`);
       return (window.location = "/login");
     }
     this.showCreatePost();
-    this.getFeeds();
+    this.handleGetPosts();
+    // this.handleGetCommentsLikes();
+    window.scrollTo(0, 0);
   }
 
   componentDidUpdate(prevProps, prevState) {
+    // console.log("call componentDidUpdate");
     // re-fetching data in current page with different user (not full reload)
     if (prevProps.match.params.username !== this.props.match.params.username) {
+      // console.log("call componentDidUpdate different user");
+      this.setState({ posts: [] });
+      this.setState({ usernameThisProfile: null });
+      this.setState({ lastId: null });
       return this.componentDidMount();
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   console.log("call shouldComponentUpdate");
+  //   console.log("nextState di SCU:", nextState);
+  //   console.log("this.state di SCU:", this.state);
+  //   console.log("nextProps.location di SCU:", nextProps);
+  //   console.log("this.props.location di SCU:", this.props);
+  //   return nextProps === this.props;
+  // }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
     // re-fetching data in current page with same user (not full reload)
     if (nextProps.location.state === this.props.match.params.username) {
-      console.log("next.Props di CWRP:", nextProps.location);
-      console.log("this.props di CWRP:", this.props.location);
+      this.setState({ lastId: null });
+      // console.log("call componentWillReceiveProps");
       return this.componentDidMount();
     }
   }
 
   showCreatePost = () => {
     if (!this.props.user) return this.setState({ showCreatePost: false });
-
-    const currentUserProfile =
-      this.props.user.user.username === this.props.match.params.username
-        ? this.setState({ showCreatePost: true })
-        : this.setState({ showCreatePost: false });
-
-    // if (currentUserProfile) this.setState({ showCreatePost: true });
-    // else this.setState({ showCreatePost: false });
+    this.props.user.user.username === this.props.match.params.username
+      ? this.setState({ showCreatePost: true })
+      : this.setState({ showCreatePost: false });
   };
 
-  handleCreatePost = event => {
-    event.preventDefault();
-    // let messagePost = this.createPost.current.value;
-    let messagePost = this.createPost.current.value;
-    console.log("messagePost: ", messagePost);
-    if (messagePost.length === 0) return;
-    const requestBody = {
-      query: `
-          mutation{
-            createPost(input:{creatorPostId:${this.props.user.user.id}, post:"""${messagePost}"""})
-            {
-              id
-              post
-              creatorPost{
-                username
-              }
-              comments {
-                id
-                comment
-                creatorComment {
-                  id
-                  username
-                }
-              }
-            }
-          }
-        `
-    };
+  handleGetPosts = () => {
+    getPosts(this.props.match.params.username, this.state.lastId).then(data => {
+      try {
+        const feeds = data.data.getUser;
+        const posts = data.data.getUser.somePosts;
+        const comments = data.data.getUser.somePosts;
+        const likes = data.data.getUser.somePosts;
+        const olderPosts = [this.state.posts];
+        const olderComments = [this.state.comments];
+        const olderLikes = [this.state.likes];
+        const bankPosts = [];
+        const bankComments = [];
+        const bankLikes = [];
+        const index = feeds.somePosts.length - 1;
+        const limit = 10;
+        const disableLoad =
+          posts.length < limit
+            ? this.setState({ disableLoad: true })
+            : this.setState({ disableLoad: false });
 
-    fetch(urlEndPoint, {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: localStorage.getItem(tokenKey)
-      }
-    })
-      .then(res => {
-        console.log("res: ", res);
-        if (res.ok === false) {
-          // segera diganti dengan toastify
-          console.log(res.statusText);
+        const lastId =
+          posts.length > 0
+            ? this.setState({
+                lastId: feeds.somePosts[index].id
+              })
+            : null;
+
+        const icon = [
+          ...posts.map(post => {
+            const groupLikes = _.groupBy(post.likes, "creatorLikesId");
+            if (groupLikes[this.props.user.user.id]) {
+              const isLike = groupLikes[this.props.user.user.id][0].like;
+              return { ...post, iconLikes: isLike, commentsRow: false };
+            }
+            if (post.likes.length > 0 || post.likes.length === 0) {
+              return { ...post, iconLikes: false, commentsRow: false };
+            }
+          })
+        ];
+
+        if (olderPosts.length !== 0) {
+          olderPosts[0].map(post => bankPosts.push(post));
         }
-        return res.json();
-      })
-      .then(data => {
-        console.log("data:", data);
-        // jika message telah di post dan telah berhasil dimasukkan kedalam database,
-        // maka tutup model (bersihkan text), dan refetch data.
-        // jika tidak berhasil buat toastify untuk pemberitahuan pesan gagal dikirim
-        // NOTE: belum ditambahkan tutup model setelah berhasil mengirim message
-        const feed = data.data.createPost;
-        this.setState({ nextPosts: this.state.posts.push(feed) });
-        this.createPost.current.value = null;
+        if (olderComments.length !== 0) {
+          olderComments[0].map(comment => bankComments.push(comment));
+        }
+        if (olderLikes.length !== 0) {
+          olderLikes[0].map(like => bankLikes.push(like));
+        }
 
-        console.log("this.state.posts: ", this.state.posts);
-        console.log("this.state.nextPosts: ", this.state.nextPosts);
-        return;
-      });
-  };
+        // icon = posts + iconLike property
+        icon.map(i => bankPosts.push(i));
+        comments.map(c => c.comments.map(item => bankComments.push(item)));
+        likes.map(l => l.likes.map(item => bankLikes.push(item)));
 
-  handleChangeComment = ({ currentTarget }) => {
-    const commentInputs = { ...this.state.commentInput };
-    commentInputs[currentTarget.name] = currentTarget.value;
-    const inputs = this.message.concat(commentInputs[currentTarget.name]);
-    // this.setState({ commentInput });
-    console.log("currentTarget.name:", currentTarget.name);
-    console.log("inputs:", inputs);
-    console.log(commentInputs[currentTarget.name]);
-    this.setState({ commentInput: inputs });
-  };
-
-  handleCreateComment = event => {
-    event.preventDefault();
-    console.log("submitted");
-    console.log("this.state.commentInput:", this.state.commentInput[0]);
-    return;
-    // if (messageComment.length === 0) return;
-    // const requestBody = {
-    //   query: `
-    //       mutation{
-    //         createPost(input:{creatorPostId:${this.props.user.user.id}, post:"""${messageComment}"""})
-    //         {
-    //           id
-    //           post
-    //           creatorPost{
-    //             username
-    //           }
-    //           comments {
-    //             id
-    //             comment
-    //             creatorComment {
-    //               id
-    //               username
-    //             }
-    //           }
-    //         }
-    //       }
-    //     `
-    // };
-
-    // fetch(urlEndPoint, {
-    //   method: "POST",
-    //   body: JSON.stringify(requestBody),
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "application/json",
-    //     Authorization: localStorage.getItem(tokenKey)
-    //   }
-    // })
-    //   .then(res => {
-    //     console.log("res: ", res);
-    //     if (res.ok === false) {
-    //       // segera diganti dengan toastify
-    //       console.log(res.statusText);
-    //     }
-    //     return res.json();
-    //   })
-    //   .then(data => {
-    //     console.log("data:", data);
-    //     // jika message telah di post dan telah berhasil dimasukkan kedalam database,
-    //     // maka tutup model (bersihkan text), dan refetch data.
-    //     // jika tidak berhasil buat toastify untuk pemberitahuan pesan gagal dikirim
-    //     // NOTE: belum ditambahkan tutup model setelah berhasil mengirim message
-    //     const feed = data.data.createPost;
-    //     this.setState({ nextPosts: this.state.posts.push(feed) });
-    //     this.createPost.current.value = null;
-
-    //     console.log("this.state.posts: ", this.state.posts);
-    //     console.log("this.state.nextPosts: ", this.state.nextPosts);
-    //     return;
-    //   });
-  };
-
-  getFeeds = () => {
-    const username = JSON.stringify(this.props.match.params.username);
-    const requestBody = {
-      query: `
-          query{
-            getUser(input:{username:${username}}) {
-              id
-              username
-              posts {
-                id
-                post
-                creatorPost{
-                  username
-                }
-                comments {
-                  id
-                  comment
-                  creatorComment {
-                    id
-                    username
-                  }
-                }
-              }
-            }
-          }
-        `
-    };
-
-    fetch(urlEndPoint, {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json"
+        this.setState({
+          idThisProfile: feeds.id,
+          emailThisProfile: feeds.email,
+          usernameThisProfile: feeds.username,
+          posts: bankPosts,
+          comments: bankComments,
+          likes: bankLikes,
+          NotFound: false
+        });
+      } catch (error) {
+        // throw error;
+        return this.setState({ NotFound: true });
       }
-    })
-      .then(res => {
-        console.log("res: ", res);
-        return res.json();
-      })
-      .then(data => {
-        console.log(data);
+    });
+  };
+
+  // handleGetCommentsLikes using later
+  // handleGetCommentsLikes = () => {
+  //   getCommentsLikes(this.props.match.params.username, this.state.lastId).then(
+  //     data => {
+  //       console.log("data:", data);
+  //       try {
+  //         const comments = data.data.getUser.somePosts;
+  //         const likes = data.data.getUser.somePosts;
+  //         const bankComment = [];
+  //         const bankLike = [];
+
+  //         comments.map(c => c.comments.map(item => bankComment.push(item)));
+  //         likes.map(l => l.likes.map(item => bankLike.push(item)));
+
+  //         this.setState({ comments: bankComment });
+  //         this.setState({ likes: bankLike });
+  //       } catch (error) {
+  //         return this.setState({ NotFound: true });
+  //       }
+  //     }
+  //   );
+  // };
+
+  handleDeletePost = post => {
+    // Using Pesimis
+    deletePost(post.id).then(data => {
+      try {
+        if (data.data) {
+          const posts = this.state.posts.filter(p => p.id !== post.id);
+          this.setState({ posts });
+        }
+      } catch (error) {
+        throw new Error("data not found");
+      }
+    });
+  };
+
+  handleDeleteComment = comment => {
+    // Using Pesimis
+    deleteComment(comment.id).then(data => {
+      try {
+        if (data.data) {
+          const comments = this.state.comments.filter(c => c !== comment);
+          this.setState({ comments });
+        }
+      } catch (error) {
+        throw new Error("data not found");
+      }
+    });
+  };
+
+  //
+  handleCreateComment = (e, postId) => {
+    const limit = 1500;
+    if (e.currentTarget.value.length > limit) {
+      e.currentTarget.value = this.createCommentInput;
+      return;
+    }
+    const input = e.currentTarget.value;
+    this.createCommentInput = input;
+    // Using Pesimis
+    if (e.keyCode === 13 && e.shiftKey === false && input.length <= limit) {
+      e.preventDefault();
+      const messageInput = e.currentTarget.value;
+      const propsUserId = this.props.user.user.id;
+      const onlyWhiteSpace = !messageInput || !messageInput.match(/[\S]/);
+      if (onlyWhiteSpace) return;
+
+      // call database
+      createComment(propsUserId, postId, messageInput).then(data => {
         try {
-          const feed = data.data.getUser;
-          this.setState({ usernameThisProfile: feed.username });
-          this.setState({ posts: feed.posts });
-          console.log("this.state.posts: ", this.state.posts);
+          const feed = data.data.createComment;
+          this.setState({ nextComments: this.state.comments.push(feed) });
         } catch (error) {
-          return this.setState({ NotFound: true });
+          throw new Error("data not found");
         }
       });
+
+      return (
+        (e.currentTarget.value = null), (e.currentTarget.style.height = "27px")
+      );
+    }
+  };
+
+  // FIX & onChangePostInput like postInput
+  onChangePostInput = e => {
+    const limit = 3000;
+    if (e.currentTarget.value.length > limit) {
+      e.currentTarget.value = this.createPostInput;
+      return;
+    }
+    const input = e.currentTarget.value;
+    this.createPostInput = input;
+  };
+
+  // Need call database
+  handleCreatePost = event => {
+    // Using Pesimis
+    event.preventDefault();
+    const propsUserId = this.props.user.user.id;
+    const messageInput = this.createPostInput;
+    const onlyWhiteSpace = !messageInput || !messageInput.match(/[\S]/);
+    if (onlyWhiteSpace) return;
+
+    createPost(propsUserId, messageInput).then(data => {
+      try {
+        const feed = data.data.createPost;
+        const addIconLike = { ...feed, iconLikes: false, commentsRow: false };
+
+        this.createPostInput = "";
+        this.setState({ nextPosts: this.state.posts.unshift(addIconLike) });
+      } catch (error) {
+        throw new Error("data not found");
+      }
+    });
+
+    this.setState({ reset: true });
+    setTimeout(() => this.setState({ reset: false }), 100);
+  };
+
+  handleUpdateOrCreateLike = post => {
+    const likes = [...this.state.likes];
+    const { id } = this.props.user.user;
+
+    if (post.likes) {
+      if (post.likes && post.likes.length > 0) {
+        const posts = [...this.state.posts];
+        const indexStatePosts = _.findIndex(posts, post);
+        const objStatePostsLikes = _.groupBy(
+          posts[indexStatePosts].likes,
+          "creatorLikesId"
+        )[id];
+        const indexStatePostsLikes = objStatePostsLikes
+          ? _.findIndex(posts[indexStatePosts].likes, objStatePostsLikes[0])
+          : null;
+
+        const groupPostLikes = _.groupBy(post.likes, "creatorLikesId");
+        const alreadyLikes = groupPostLikes[id];
+        if (alreadyLikes) {
+          const groupStateLike = _.groupBy(likes, "creatorLikesId");
+          const indexStateLike = _.findIndex(groupStateLike[id], {
+            postId: post.id
+          });
+          const objLikes = groupStateLike[id][indexStateLike];
+          const indexLikes = _.findIndex(likes, objLikes);
+          const like = !objLikes.like;
+
+          updateOrCreateLike(id, post.id, like).then(data => {
+            try {
+              const update = data.data.updateOrCreateLike;
+              const bankLikes = [...likes];
+
+              if (objStatePostsLikes) {
+                posts[indexStatePosts].likes[indexStatePostsLikes] = update;
+                posts[indexStatePosts].iconLikes = update.like;
+                this.setState({ posts });
+              }
+
+              bankLikes[indexLikes] = update;
+              this.setState({ likes: bankLikes });
+              return;
+            } catch (error) {
+              throw new Error("data not found");
+            }
+          });
+        } else {
+          const posts = [...this.state.posts];
+          const indexPosts = _.findIndex(posts, post);
+          const like = true;
+
+          updateOrCreateLike(id, post.id, like).then(data => {
+            try {
+              const update = data.data.updateOrCreateLike;
+              const bankLikes = likes.concat(update);
+
+              posts[indexPosts].likes[0] = update;
+              posts[indexStatePosts].iconLikes = update.like;
+
+              this.setState({ likes: bankLikes });
+              this.setState({ posts });
+              return;
+            } catch (error) {
+              throw new Error("data not found");
+            }
+          });
+        }
+        return;
+      } else {
+        const posts = [...this.state.posts];
+        const indexStatePosts = _.findIndex(posts, post);
+        const like = true;
+
+        updateOrCreateLike(id, post.id, like).then(data => {
+          try {
+            const update = data.data.updateOrCreateLike;
+            const bankLikes = likes.concat(update);
+
+            posts[indexStatePosts].likes[0] = update;
+            posts[indexStatePosts].iconLikes = update.like;
+
+            this.setState({ likes: bankLikes });
+            this.setState({ posts });
+            return;
+          } catch (error) {
+            throw new Error("data not found");
+          }
+        });
+      }
+      return;
+    }
   };
 
   render() {
-    const setString = (item, value) => {
-      const max = item.length;
-      for (let i = 0; i <= max; i++) {
-        console.log((item[i] = value));
-      }
-    };
-    const commentFormId = this.state.posts.map(post => post.id);
-    const commentFormId2 = [...commentFormId];
-    console.log("commentFormId:", commentFormId);
-    console.log("commentFormId2:", commentFormId2);
-    console.log(
-      "this.state.posts.id:",
-      this.state.posts.map(post => post.id)
-    );
-    console.log("this.state:", this.state);
-    const commentFormIdInvert = _.invert(commentFormId);
-    console.log("commentFormIdInvert:", commentFormIdInvert);
-    console.log("setString:", setString(commentFormIdInvert, ""));
+    console.log("this.state in render:", this.state);
+    // if (service.getCurrentUser()) return <Redirect to="/feed" />;
+
     return (
       <React.Fragment>
-        {this.state.NotFound && (
+        {(this.state.NotFound || !this.props.user) && (
           <ProfileNotFound
             username={this.props.match.params.username}
             login={this.props.user}
           />
         )}
-        {!this.state.NotFound && <h1>{this.state.usernameThisProfile}</h1>}
-        <table className="w-100">
-          {this.state.showCreatePost && (
-            <thead className="card-body card mb-3">
-              <tr className="d-flex">
-                <td className="w-100">
-                  <button
-                    type="button"
-                    className="btn btn-link"
-                    data-toggle="modal"
-                    data-target="#createPostModal"
-                  >
-                    <strong>Create a Post</strong>
-                  </button>
-                  <div
-                    className="modal fade"
-                    id="createPostModal"
-                    tabIndex="-1"
-                    role="dialog"
-                    aria-labelledby="createPostModalLabel"
-                    aria-hidden="true"
-                  >
-                    <div className="modal-dialog" role="document">
-                      <div className="modal-content">
-                        <div className="modal-header">
-                          <h5 className="modal-title" id="createPostModalLabel">
-                            Create a Post
-                          </h5>
-                          <button
-                            type="button"
-                            className="close"
-                            data-dismiss="modal"
-                            aria-label="Close"
-                          >
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                        </div>
-                        <form onSubmit={this.handleCreatePost}>
-                          <div className="form-group modal-body">
-                            <textarea
-                              className="form-control fixed"
-                              id="createPost"
-                              placeholder="What do you think?"
-                              ref={this.createPost}
-                              rows="7"
-                            ></textarea>
-                          </div>
-                          <div className="modal-footer">
-                            <button
-                              type="button"
-                              className="btn btn-secondary"
-                              data-dismiss="modal"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              className="btn btn-primary"
-                              // data-dismiss="modal"
-                              // aria-label="Close"
-                            >
-                              Post
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </thead>
-          )}
-          {Object.assign(
-            [],
-            this.state.posts.map(post => (
-              <tbody key={post.id} className="card-body card mb-3">
-                <tr className="d-flex align-items-center">
-                  <td className="border-0 d-flex flex-column mr-2">
-                    <Link to="/about" className="post-photo"></Link>
-                  </td>
-                  <td className="d-flex flex-column border-0">
-                    <Link
-                      to={{
-                        pathname: `/profile/${post.creatorPost.username}`,
-                        state: post.creatorPost.username
-                      }}
-                      className="post-name"
-                    >
-                      {post.creatorPost.username}
-                    </Link>
-                    <span className="post-time">1 hour ago</span>
-                  </td>
-                </tr>
-                <tr className="mt-2 mb-2">
-                  <td className="mt-20 mb-20 post-message border-0">
-                    {post.post}
-                  </td>
-                </tr>
-                <tr className="d-flex border-bottom border-top mb-2">
-                  <td className="w-100">
-                    <button
-                      type="button"
-                      className="btn btn-light rounded-0 float-left w-50"
-                      // data-toggle="modal"
-                      // data-target={`#comment${post.id}`}
-                    >
-                      Comment
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-light rounded-0 float-right w-50"
-                    >
-                      Like
-                    </button>
-                  </td>
-                </tr>
 
-                {post.comments.length > 0 &&
-                  post.comments.map(comment => (
-                    <tr
-                      className="d-flex align-items-center mb-2"
-                      key={comment.id}
-                    >
-                      <td className="border-0 d-flex flex-column align-self-start">
-                        <Link
-                          to={`/profile/${comment.creatorComment.username}`}
-                          className="comment-photo mr-2"
-                        ></Link>
-                      </td>
-                      <td className="comment-message border-0 p-2">
-                        <Link
-                          to={`/profile/${comment.creatorComment.username}`}
-                        >
-                          <strong>{comment.creatorComment.username} </strong>
-                        </Link>
-                        {comment.comment}
-                      </td>
-                    </tr>
-                  ))}
-                <tr className="d-flex align-items-center">
-                  <td className="border-0 d-flex flex-column align-self-start">
-                    <Link
-                      // to={`/profile/${comment.creatorComment.username}`}
-                      className="comment-photo mr-2"
-                    ></Link>
-                  </td>
-                  <td className="comment-form">
-                    <form onSubmit={this.handleCreateComment}>
-                      <textarea
-                        type="text"
-                        className="comment-message comment-form pr-2 pl-2 pt-1 pb-1 form-control"
-                        id={`comment${post.id}`}
-                        placeholder="Write Comment"
-                        name={`comment${post.id}`}
-                        value={this.state.commentInput}
-                        onChange={this.handleChangeComment}
-                        autoComplete="off"
-                      ></textarea>
-                    </form>
-                  </td>
-                </tr>
-              </tbody>
-            ))
-          ).reverse()}
-        </table>
+        {!this.state.NotFound && this.props.user && (
+          <React.Fragment>
+            <ProfileJumbotron
+              user={this.props.user.user}
+              idThisProfile={this.state.idThisProfile}
+              usernameThisProfile={this.state.usernameThisProfile}
+              emailThisProfile={this.state.emailThisProfile}
+            />
+            <PostInput
+              reset={this.state.reset}
+              onChangePostInput={this.onChangePostInput}
+              handleCreatePost={this.handleCreatePost}
+              showCreatePost={this.state.showCreatePost}
+            />
+            <Feed
+              user={this.props.user.user}
+              idThisProfile={this.state.idThisProfile}
+              usernameThisProfile={this.state.usernameThisProfile}
+              emailThisProfile={this.state.emailThisProfile}
+              showCreatePost={this.state.showCreatePost}
+              disableLoad={this.state.disableLoad}
+              reset={this.state.reset}
+              posts={this.state.posts}
+              comments={this.state.comments}
+              likes={this.state.likes}
+              createPostInput={this.createPostInput}
+              onChangePostInput={this.onChangePostInput}
+              handleGetPosts={this.handleGetPosts}
+              handleUpdatePost={this.handleUpdatePost}
+              handleDeletePost={this.handleDeletePost}
+              handleCreatePost={this.handleCreatePost}
+              createCommentInput={this.createCommentInput}
+              onChangeCommentInput={this.onChangeCommentInput}
+              handleDeleteComment={this.handleDeleteComment}
+              handleUpdateComment={this.handleUpdateComment}
+              handleCreateComment={this.handleCreateComment}
+              handleOnClickCommentButton={this.handleOnClickCommentButton}
+              handleUpdateOrCreateLike={this.handleUpdateOrCreateLike}
+            />
+          </React.Fragment>
+        )}
       </React.Fragment>
     );
   }

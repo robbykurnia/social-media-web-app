@@ -21,28 +21,9 @@ export const mutation = {
     { models, req }
   ) => {
     isAuth(req);
-    // models.Like.findOne({
-    //   where: { postId, creatorLikesId }
-    // }).then(res => {
-    //   if (res) {
-    //     models.Like.update({ like }, { where: { postId, creatorLikesId } });
-    //   } else {
-    //     models.Like.create({ creatorLikesId, postId, like });
-    //   }
-    // });
-    // return like;
     const find = await models.Like.findOne({
       where: { postId, creatorLikesId }
     });
-    // const data = (await find)
-    //   ? await models.Like.update(
-    //       { creatorLikesId, postId, like },
-    //       { where: { postId, creatorLikesId } }
-    //     )
-    //   : await models.Like.create({ creatorLikesId, postId, like });
-    // console.log("find:", find);
-    // console.log("data:", data);
-    // return data;
     if (find) {
       const update = await models.Like.update(
         { like },
@@ -51,11 +32,9 @@ export const mutation = {
       const get = await models.Like.findOne({
         where: { postId, creatorLikesId }
       });
-      console.log("get:", get);
       return get;
     } else {
       const create = await models.Like.create({ creatorLikesId, postId, like });
-      console.log("create:", create);
       return create;
     }
   },

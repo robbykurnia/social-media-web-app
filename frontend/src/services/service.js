@@ -5,16 +5,6 @@ import SwalAlert from "../services/SwalAlert";
 const tokenKey = "token";
 const urlEndPoint = apiUrl;
 
-// function fetchData(requestBody) {
-//   return fetch(urlEndPoint, {
-//     method: "POST",
-//     body: JSON.stringify(requestBody),
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: localStorage.getItem(tokenKey)
-//     }
-//   });
-// }
 function fetchData(requestBody) {
   return fetch(urlEndPoint, {
     method: "POST",
@@ -25,23 +15,27 @@ function fetchData(requestBody) {
     }
   }).then(res => {
     console.log("res di service", res);
-    // if (res.status >= 400 && res.status < 500) {
-    //   return SwalAlert.warning(`${res.status} ${res.statusText}`, "error");
-    // }
+    if (res.status >= 400 && res.status < 500) {
+      return SwalAlert.warning(`${res.status} ${res.statusText}`, "error");
+    }
     return res.json();
   });
 }
-
-export function getPostLastId(propsUsername) {
-  const username = JSON.stringify(propsUsername);
+// TUJUAN: MAU SERACH USER DI SERACPESON COMPONENT
+export function getUser(propsUsername) {
+  const username = JSON.stringify(propsUsername).toLowerCase();
   const requestBody = {
     query: `
         query{
-          getUser(input:{username:${username}}) {
+          s1:searchUsername(input:{username:${username}}) {
             id
-            posts {
-              id
-            }
+            username
+            email
+          }
+          s2:searchUsername(input:{username:"[${propsUsername}]"}) {
+            id
+            username
+            email
           }
         }
       `
@@ -52,7 +46,7 @@ export function getPostLastId(propsUsername) {
 
 // Later, I'll only using user.id as parameter.
 export function getPosts(propsUsername, lastId) {
-  const username = JSON.stringify(propsUsername);
+  const username = JSON.stringify(propsUsername).toLowerCase();
   const cursor = lastId ? lastId : null;
   const requestBody = {
     query: `
@@ -60,6 +54,7 @@ export function getPosts(propsUsername, lastId) {
           getUser(input:{username:${username}}) {
             id
             username
+            email
             somePosts (limit:10, cursor: ${cursor}) {
               id
               post
@@ -92,9 +87,9 @@ export function getPosts(propsUsername, lastId) {
   return fetchData(requestBody);
 }
 
-// using later
+// getCommentsLikes, using later
 // export function getCommentsLikes(propsUsername, lastId) {
-//   const username = JSON.stringify(propsUsername);
+//   const username = JSON.stringify(propsUsername).toLowerCase();
 //   const cursor = lastId ? lastId : null;
 //   const requestBody = {
 //     query: `
@@ -176,6 +171,7 @@ ${message}
 
   return fetchData(requestBody);
 }
+
 export function updateOrCreateLike(propsUserId, postId, like) {
   const requestBody = {
     query: `
@@ -236,6 +232,7 @@ export default {
   deletePost,
   createPost,
   createComment,
+  getUser,
   getPosts,
   // getCommentsLikes,
   getCurrentUser,

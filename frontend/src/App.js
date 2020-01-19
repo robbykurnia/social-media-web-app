@@ -1,15 +1,16 @@
 import React, { Component } from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
-import "./App.css";
 import NavBar from "./components/navBar";
 import NotFound from "./components/notFound";
 import Intro from "./components/intro";
-import Feed from "./components/feed";
-import Profile from "./components/profileNew";
+// import Feed from "./components/feed";
+import Profile from "./components/profile";
 import Login from "./components/login";
 import Logout from "./components/logout";
 import Register from "./components/register";
 import service from "./services/service";
+import "./App.css";
+import SearchPerson from "./components/searchPerson";
 
 class App extends Component {
   constructor(props) {
@@ -23,17 +24,17 @@ class App extends Component {
     return (
       <div>
         <NavBar user={user} />
-        <br />
-        <div className="container">
+        <div className="container not-navbar">
           <Switch>
             <Route
               path="/profile/:username?"
               render={props => <Profile {...props} user={user} />}
             />
-            <Route
+            {/* <Route
               path="/feed"
               render={props => <Feed {...props} user={user} />}
-            />
+            /> */}
+            <Route path="/search/:username" exact component={SearchPerson} />
             <Route path="/login" exact component={Login} />
             <Route path="/logout" exact component={Logout} />
             <Route path="/register" exact component={Register} />

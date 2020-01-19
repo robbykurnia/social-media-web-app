@@ -44,6 +44,10 @@ input:focus {
   font-family: "audiowide-regular";
 }
 
+.not-navbar {
+  transform: translateY(50px);
+}
+
 .post-photo {
   height: 38px;
   width: 38px;
@@ -101,6 +105,11 @@ input:focus {
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
+}
+
+.suggestion-box {
+  position: fixed;
+  z-index: 1 !important;
 }
 
 .ellipsis {
