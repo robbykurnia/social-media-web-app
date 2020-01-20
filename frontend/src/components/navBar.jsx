@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { Link, NavLink, Redirect } from "react-router-dom";
-// import e from "express";
+import { Link, NavLink } from "react-router-dom";
 import { getUser } from "./../services/service";
 import SearchTypehead from "./common/searchTypehead";
 
@@ -46,10 +45,11 @@ class NavBar extends Component {
     const onlyWhiteSpace = !searchInput || !searchInput.match(/[\S]/);
     this.setState({ searchInput });
 
-    if (searchInput.match(/[^a-zA-Z0-9]/)) return;
+    if (searchInput.match(/[^a-zA-Z0-9]/))
+      return this.setState({ persons: [] });
     if (onlyWhiteSpace) return this.setState({ persons: [] });
 
-    getUser(searchInput).then(data => {
+    getUser(searchInput.trim()).then(data => {
       try {
         const substring = data.data.s1;
         // const regex = data.data.s2;
@@ -117,8 +117,8 @@ class NavBar extends Component {
                 type="text"
                 // id="dropdownMenuButton"
                 data-toggle="dropdown"
-                aria-haspopup="false"
-                aria-expanded="true"
+                // aria-haspopup="false"
+                // aria-expanded="true"
                 autoComplete="off"
                 value={this.state.searchInput}
                 onChange={this.onChange}
@@ -155,7 +155,7 @@ class NavBar extends Component {
                   <NavLink
                     onClick={this.onClick}
                     className="nav-link nav-item pt-1 pb-1"
-                    to="/feed"
+                    to="/"
                   >
                     <div className="d-flex flex-column bd-highlight align-items-center">
                       <i
@@ -187,7 +187,11 @@ class NavBar extends Component {
                   <NavLink
                     onClick={this.onClick}
                     className="nav-link nav-item pt-1 pb-1"
-                    to={`/profile/${user.user.username}`}
+                    // to={`/profile/${user.user.username}`}
+                    to={{
+                      pathname: `/profile/${user.user.username}`,
+                      state: user.user.username
+                    }}
                   >
                     <div className="d-flex flex-column bd-highlight align-items-center">
                       <i

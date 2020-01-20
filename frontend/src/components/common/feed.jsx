@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import BottomScrollListener from "react-bottom-scroll-listener";
 import TextareaAutosize from "react-textarea-autosize";
 import _ from "lodash";
-import PostInput from "./common/postInput";
-import ProfileJumbotron from "./common/profileJumbotron";
 
 const Feed = ({
   disableLoad,
@@ -19,10 +17,6 @@ const Feed = ({
   handleDeleteComment,
   handleUpdateOrCreateLike,
   handleResetFeed
-  // showCreatePost,
-  // handleCreatePost,
-  // reset,
-  // onChangePostInput
 }) => {
   const isLike = likes.filter(item => item.like === true);
   const countLikes = _.countBy(isLike, "postId");
@@ -30,33 +24,18 @@ const Feed = ({
 
   return (
     <React.Fragment>
-      {/* <ProfileJumbotron
-        usernameThisProfile={usernameThisProfile}
-        idThisProfile={idThisProfile}
-      /> */}
       <table className="w-100">
-        {/* {showCreatePost && (
-          <thead className="card-body card mb-3 p-0">
-            <tr className="d-flex">
-              <PostInput
-                handleCreatePost={handleCreatePost}
-                onChangePostInput={onChangePostInput}
-                reset={reset}
-              />
-            </tr>
-          </thead>
-        )} */}
         {posts.map(post => (
           <tbody key={post.id} className="card-body card mb-2 p-2">
             <tr className="d-flex align-items-center">
               <td className="border-0 d-flex flex-column mr-2">
                 <Link
+                  onClick={handleResetFeed}
+                  className="post-photo"
                   to={{
                     pathname: `/profile/${post.creatorPost.username}`,
                     state: post.creatorPost.username
                   }}
-                  onClick={handleResetFeed}
-                  className="post-photo"
                 >
                   <img
                     className="post-photo"
@@ -67,12 +46,12 @@ const Feed = ({
               </td>
               <td className="d-flex flex-column border-0">
                 <Link
+                  onClick={handleResetFeed}
+                  className="post-name"
                   to={{
                     pathname: `/profile/${post.creatorPost.username}`,
                     state: post.creatorPost.username
                   }}
-                  onClick={handleResetFeed}
-                  className="post-name"
                 >
                   {post.creatorPost.username}
                 </Link>
@@ -158,6 +137,7 @@ const Feed = ({
                       <React.Fragment>
                         <td className="border-0 d-flex flex-column mb-2 align-self-start">
                           <Link
+                            onClick={handleResetFeed}
                             to={{
                               pathname: `/profile/${comment.creatorComment.username}`,
                               state: comment.creatorComment.username
@@ -172,6 +152,7 @@ const Feed = ({
                         </td>
                         <td className="comment-message border-0 mb-2 pb-1 pt-1 pr-2 pl-2">
                           <Link
+                            onClick={handleResetFeed}
                             to={{
                               pathname: `/profile/${comment.creatorComment.username}`,
                               state: comment.creatorComment.username
@@ -210,6 +191,7 @@ const Feed = ({
                 <tr className="d-flex align-items-center">
                   <td className="border-0 d-flex align-self-start">
                     <Link
+                      onClick={handleResetFeed}
                       to={{
                         pathname: `/profile/${user.username}`,
                         state: user.username
@@ -243,7 +225,7 @@ const Feed = ({
         ))}
       </table>
       {disableLoad === false && (
-        <BottomScrollListener onBottom={handleGetPosts} offset={700} />
+        <BottomScrollListener onBottom={handleGetPosts} offset={200} />
       )}
     </React.Fragment>
   );

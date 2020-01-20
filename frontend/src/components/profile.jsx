@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import _ from "lodash";
-import Feed from "./feed";
+import Feed from "./common/feed";
 import PostInput from "./common/postInput";
 import ProfileNotFound from "./common/profileNotFound";
 import ProfileJumbotron from "./common/profileJumbotron";
@@ -19,6 +19,7 @@ class Profile extends Component {
     this.createPostInput = "";
     this.createCommentInput = "";
     this.state = {
+      profile: [],
       posts: [],
       comments: [],
       likes: [],
@@ -29,24 +30,43 @@ class Profile extends Component {
     };
   }
 
-  handleResetFeed = () => {
-    this.setState({ lastId: null, posts: [], comments: [], likes: [] });
-    console.log("this.state.handleResetFeed", this.state);
-    console.log("handleResetFeed");
+  handleGetPosts = () => {
+    console.log("call handleGetPosts");
+    console.log("this.state.lastId", this.state.lastId);
+    let lastId = this.state.lastId;
+    const differentUser =
+      this.state.usernameThisProfile !== this.props.match.params.username;
+    console.log(this.state.usernameThisProfile, this.state.usernameThisProfile);
+    if (differentUser) {
+      lastId = null;
+    }
+    console.log("this.state.lastId bawah", this.state.lastId);
+    this.CALLGETPOST(this.state.lastId);
+  };
 
+  handleResetFeed = () => {
+    this.setState({
+      lastId: null,
+      profile: [],
+      posts: [],
+      comments: [],
+      likes: []
+    });
+    // console.log("call handleResetFeed");
+    // console.log("this.state.lastId", this.state.lastId);
+    // console.log("this.state.handleResetFeed", this.state);
+    // console.log(
+    //   "this.props.match.params.username",
+    //   this.props.match.params.username
+    // );
+    // this.CALLGETPOST(null);
+    // this.componentWillReceiveProps();
     // this.componentDidMount();
   };
 
-  handleOnClickCommentButton = post => {
-    // this.setState({ comment });
-    const posts = [...this.state.posts];
-    const indexPost = posts.indexOf(post);
-    posts[indexPost].commentsRow = !posts[indexPost].commentsRow;
-    this.setState({ posts });
-  };
-
   componentDidMount() {
-    console.log("call componentDidMount()");
+    console.log("call componentDidMount");
+    console.log("this.state.lastId", this.state.lastId);
     if (!this.props.match.params.username) {
       if (this.props.user)
         return (window.location = `/profile/${this.props.user.user.username}`);
@@ -59,37 +79,63 @@ class Profile extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // console.log("call componentDidUpdate");
+    console.log("call componentDidUpdate");
+    console.log("this.state.lastId", this.state.lastId);
     // re-fetching data in current page with different user (not full reload)
     if (prevProps.match.params.username !== this.props.match.params.username) {
-      // if(!this.state.lastId || )
       console.log("call componentDidUpdate different user");
-      this.setState({ posts: [] });
-      this.setState({ comments: [] });
-      this.setState({ likes: [] });
-      this.setState({ usernameThisProfile: null });
-      this.setState({ lastId: null });
-      console.log("this.state.posts in CDU", this.state.posts);
-      console.log("this.state.lastId in CDU", this.state.lastId);
       console.log(
-        "this.state.usernameThisProfile in CDU",
-        this.state.usernameThisProfile
+        "prevProps.match.params.username",
+        prevProps.match.params.username
       );
-      return this.componentDidMount();
+      console.log(
+        "this.props.match.params.username",
+        this.props.match.params.username
+      );
+      this.setState({
+        lastId: null,
+        profile: [],
+        posts: [],
+        comments: [],
+        likes: [],
+        changeUser: true
+      });
+      this.showCreatePost();
+      this.CALLGETPOST(null);
+      // this.setState({ posts: [] });
+      // this.setState({ comments: [] });
+      // this.setState({ likes: [] });
+      // this.setState({ usernameThisProfile: null });
+      // this.setState({ lastId: null });
+      // console.log("this.state.posts in CDU", this.state.posts);
+      // console.log("this.state.lastId in CDU", this.state.lastId);
+      // console.log(
+      //   "this.state.usernameThisProfile in CDU",
+      //   this.state.usernameThisProfile
+      // );
+      // return this.componentDidMount();
     }
-    // if (prevProps.match.params.username !== this.props.match.params.username) {
-    //   console.log("call componentDidUpdate different user");
-    //   this.setState({ posts: [] });
-    //   this.setState({ usernameThisProfile: null });
-    //   this.setState({ lastId: null });
-    //   console.log("this.state.posts in CDU", this.state.posts);
-    //   console.log("this.state.lastId in CDU", this.state.lastId);
-    //   console.log(
-    //     "this.state.usernameThisProfile in CDU",
-    //     this.state.usernameThisProfile
-    //   );
-    //   return this.componentDidMount();
-    // }
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    console.log("call componentWillReceiveProps");
+    console.log("this.state.lastId", this.state.lastId);
+    // re-fetching data in current page with same user (not full reload)
+    if (nextProps.location.state === this.props.match.params.username) {
+      // this.setState({ lastId: null });
+      // this.setState({ lastId: null });
+      console.log("call componentWillReceiveProps same User");
+      this.setState({
+        lastId: null,
+        profile: [],
+        posts: [],
+        comments: [],
+        likes: []
+      });
+      this.showCreatePost();
+      this.CALLGETPOST(null);
+      // return this.componentDidMount();
+    }
   }
 
   // shouldComponentUpdate(nextProps, nextState) {
@@ -101,41 +147,23 @@ class Profile extends Component {
   //   return nextProps === this.props;
   // }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    // re-fetching data in current page with same user (not full reload)
-    if (nextProps.location.state === this.props.match.params.username) {
-      this.setState({ lastId: null });
-      this.setState({ lastId: null });
-      console.log("call componentWillReceiveProps");
-      return this.componentDidMount();
-    }
-    // if (nextProps.location.state !== this.props.match.params.username) {
-    //   this.setState({ posts: [] });
-    //   this.setState({ usernameThisProfile: null });
-    //   this.setState({ lastId: null });
-    //   console.log("call componentWillReceiveProps");
-    //   return this.componentDidMount();
-    // }
-  }
+  handleOnClickCommentButton = post => {
+    // this.setState({ comment });
+    const posts = [...this.state.posts];
+    const indexPost = posts.indexOf(post);
+    posts[indexPost].commentsRow = !posts[indexPost].commentsRow;
+    this.setState({ posts });
+  };
 
   showCreatePost = () => {
+    console.log("call showCreatePost");
+    console.log(
+      this.props.user.user.username === this.props.match.params.username
+    );
     if (!this.props.user) return this.setState({ showCreatePost: false });
     this.props.user.user.username === this.props.match.params.username
       ? this.setState({ showCreatePost: true })
       : this.setState({ showCreatePost: false });
-  };
-
-  handleGetPosts = () => {
-    let lastId = this.state.lastId;
-    const differentUser =
-      this.state.usernameThisProfile !== this.props.match.params.username;
-    console.log("lastId:", lastId);
-    console.log(this.state.usernameThisProfile, this.state.usernameThisProfile);
-    if (differentUser) {
-      lastId = null;
-    }
-    console.log("lastId:", lastId);
-    this.CALLGETPOST(lastId);
   };
 
   // handleGetCommentsLikes using later
@@ -351,7 +379,11 @@ class Profile extends Component {
   };
 
   CALLGETPOST(lastId) {
-    getPosts(this.props.match.params.username, lastId).then(data => {
+    const username = this.props.match.params.username;
+    console.log("CALLGETPOST");
+    console.log("lastId", lastId);
+    console.log("username", username);
+    getPosts(username, lastId).then(data => {
       try {
         console.log("handleGetPosts", data);
         const feeds = data.data.getUser;
@@ -361,6 +393,26 @@ class Profile extends Component {
         const olderPosts = [this.state.posts];
         const olderComments = [this.state.comments];
         const olderLikes = [this.state.likes];
+
+        // Check Duplicate
+        const bankFeedsId = [];
+        const newerPostsId = [];
+        const newerFeeds = posts.map(item => bankFeedsId.push(item.id));
+        const olderFeeds = olderPosts[0].map(item => bankFeedsId.push(item.id));
+        const uniqueFeedsId = [...new Set(bankFeedsId)];
+        const isUnique = bankFeedsId.length === uniqueFeedsId.length;
+
+        // const filerPosts = olderPosts.filter();
+        // console.log("filerPosts", filerPosts);
+        console.log("_posts", posts);
+        console.log("_olderPosts", olderPosts);
+        console.log("_uniqueFeedsId", uniqueFeedsId);
+        console.log("_bankFeedsId", bankFeedsId);
+        console.log("_isUnique", isUnique);
+        if (!isUnique) {
+          return;
+        }
+
         const bankPosts = [];
         const bankComments = [];
         const bankLikes = [];
@@ -382,10 +434,10 @@ class Profile extends Component {
             if (groupLikes[this.props.user.user.id]) {
               const isLike = groupLikes[this.props.user.user.id][0].like;
               return { ...post, iconLikes: isLike, commentsRow: false };
-            }
-            if (post.likes.length > 0 || post.likes.length === 0) {
+            } else if (post.likes.length > 0 || post.likes.length === 0) {
               return { ...post, iconLikes: false, commentsRow: false };
             }
+            return null;
           })
         ];
         if (olderPosts.length !== 0) {
@@ -402,9 +454,7 @@ class Profile extends Component {
         comments.map(c => c.comments.map(item => bankComments.push(item)));
         likes.map(l => l.likes.map(item => bankLikes.push(item)));
         this.setState({
-          idThisProfile: feeds.id,
-          emailThisProfile: feeds.email,
-          usernameThisProfile: feeds.username,
+          profile: [feeds.id, feeds.email, feeds.username],
           posts: bankPosts,
           comments: bankComments,
           likes: bankLikes,
@@ -435,9 +485,9 @@ class Profile extends Component {
             {/* <div className="backdrop-post"></div> */}
             <ProfileJumbotron
               user={this.props.user.user}
-              idThisProfile={this.state.idThisProfile}
-              usernameThisProfile={this.state.usernameThisProfile}
-              emailThisProfile={this.state.emailThisProfile}
+              idThisProfile={this.state.profile[0]}
+              emailThisProfile={this.state.profile[1]}
+              usernameThisProfile={this.state.profile[2]}
             />
             <PostInput
               reset={this.state.reset}
