@@ -17,7 +17,8 @@ const Feed = ({
   handleGetPosts,
   handleDeletePost,
   handleDeleteComment,
-  handleUpdateOrCreateLike
+  handleUpdateOrCreateLike,
+  handleResetFeed
   // showCreatePost,
   // handleCreatePost,
   // reset,
@@ -54,6 +55,7 @@ const Feed = ({
                     pathname: `/profile/${post.creatorPost.username}`,
                     state: post.creatorPost.username
                   }}
+                  onClick={handleResetFeed}
                   className="post-photo"
                 >
                   <img
@@ -69,6 +71,7 @@ const Feed = ({
                     pathname: `/profile/${post.creatorPost.username}`,
                     state: post.creatorPost.username
                   }}
+                  onClick={handleResetFeed}
                   className="post-name"
                 >
                   {post.creatorPost.username}

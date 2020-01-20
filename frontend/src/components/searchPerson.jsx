@@ -51,8 +51,14 @@ class SearchPerson extends Component {
 
     return (
       <React.Fragment>
-        <h1>Search {this.props.match.params.username}</h1>
         <table className="w-100">
+          <thead>
+            <tr>
+              <td>
+                <h1>Search {this.props.match.params.username}</h1>
+              </td>
+            </tr>
+          </thead>
           {persons.length > 0 &&
             persons.map(person => (
               <tbody key={person.id} className="card-body card mb-3 p-2">
@@ -77,7 +83,7 @@ class SearchPerson extends Component {
                   </td>
                   <td className="ml-auto">
                     <Link to={`/profile/${person.username}`}>
-                      <button type="button" class="btn btn-primary">
+                      <button type="button" className="btn btn-primary">
                         View
                       </button>
                     </Link>

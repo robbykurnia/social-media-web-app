@@ -8,6 +8,7 @@ class NavBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      onClickInput: false,
       searchInput: "",
       persons: [
         // { id: 1, username: "robby" },
@@ -16,8 +17,19 @@ class NavBar extends Component {
       ]
     };
   }
+
+  onClickBackdrop = () => {
+    console.log("onClickBackdrop");
+    this.setState({ searchInput: "", persons: [], onClickInput: false });
+  };
+
+  onClickInput = () => {
+    console.log("onClickInput");
+    this.setState({ onClickInput: true });
+  };
+
   onClick = () => {
-    this.setState({ searchInput: "", persons: [] });
+    this.setState({ searchInput: "", persons: [], onClickInput: false });
   };
 
   onSubmit = e => {
@@ -28,12 +40,6 @@ class NavBar extends Component {
         ? (window.location = `/profile/${this.state.persons[0].username}`)
         : (window.location = `/search/${this.state.searchInput}`);
   };
-
-  // renderRedirect = () => {
-  //   if (this.state.redirect && this.state.persons.length > 0) {
-  //     return <Redirect to={`profile/${this.state.persons[0].username}`} />;
-  //   }
-  // };
 
   onChange = e => {
     const searchInput = e.currentTarget.value;
@@ -77,72 +83,58 @@ class NavBar extends Component {
   };
 
   render() {
-    // const backdropStyle = {
-    //   backgroundSize: "cover",
-    //   backgroundColor: "blue"
-    // };
     const { user } = this.props;
+    console.log("this.state.persons", this.state.persons);
+    console.log("this.state.persons.onMouseLeave", this.state.onMouseLeave);
 
     return (
-      <nav className="navbar navbar-expand-md navbar-light bg-light fixed-top p-0">
-        <div className="container pr-3 pl-3">
+      <nav className="navbar navbar-expand-md inline-block navbar-dark bg-dark fixed-top p-0">
+        {this.state.onClickInput && (
+          <div className="backdrop" onClick={this.onClickBackdrop}></div>
+        )}
+        <div style={{ zIndex: "1" }} className="container pr-3 pl-3">
           {/* Hidden only on xs */}
-          <Link className="navbar-brand d-none d-sm-block" to="/">
+          <Link
+            onClick={this.onClick}
+            className="navbar-brand d-none d-sm-block"
+            to="/"
+          >
             EXPOSE
           </Link>
           {/* Visible only on xs */}
-          <Link className="navbar-brand d-sm-none" to="/">
+          <Link
+            onClick={this.onClick}
+            className="navbar-brand d-sm-none"
+            to="/"
+          >
             EXPOSE
           </Link>
 
-          <form
-            onSubmit={this.onSubmit}
-            className="form-inline ml-auto d-md-none d-lg-none"
-          >
-            <div className="" id="search-bar-xs">
-              <div className="dropdown show">
-                <input
-                  className="form-control form-control-sm mr-2 dropdown-toggle"
-                  type="text"
-                  id="dropdownMenuButton"
-                  data-toggle="dropdown"
-                  aria-haspopup="false"
-                  aria-expanded="true"
-                  autoComplete="off"
-                  value={this.state.searchInput}
-                  onChange={this.onChange}
-                />
+          <form onSubmit={this.onSubmit} className="form-inline mr-auto">
+            <div className="dropdown show">
+              <input
+                className="form-control form-control-sm mr-2 dropdown-toggle"
+                type="text"
+                // id="dropdownMenuButton"
+                data-toggle="dropdown"
+                aria-haspopup="false"
+                aria-expanded="true"
+                autoComplete="off"
+                value={this.state.searchInput}
+                onChange={this.onChange}
+                onMouseDown={this.onClickInput}
+                // onMouseDown={this.onMouseDown}
+                // onMouseUp={this.onMouseUp}
+                // onBlur={this.state.onMouseLeave ? this.onBlur : undefined}
+                // onFocusOut={this.state.onFocusInput && this.handleFocusOutInput}
+                // onFocus={this.handleClickInput}
+              />
 
-                <SearchTypehead
-                  persons={this.state.persons}
-                  onClick={this.onClick}
-                />
-
-                {/* {this.state.persons.length > 0 && (
-                  <React.Fragment>
-                    <div
-                      className="dropdown-menu show"
-                      aria-labelledby="dropdownMenuButton"
-                    >
-                      {this.state.persons.map(item => (
-                        <Link
-                          key={item.id}
-                          className="dropdown-item pr-2 pl-2"
-                          to={`/profile/${item.username}`}
-                          onClick={this.onClick}
-                        >
-                          <img
-                            className="comment-photo mr-2"
-                            src={`https://i.picsum.photos/id/${item.id}/300/300.jpg`}
-                            alt="Profile"
-                          />
-                          {item.username}
-                        </Link>
-                      ))}
-                    </div>
-                  </React.Fragment>
-                )} */}
-              </div>
+              <SearchTypehead
+                persons={this.state.persons}
+                onClick={this.onClick}
+                // onMouseEnter={this.onMouseEnters
+              />
             </div>
           </form>
           <button
@@ -157,58 +149,78 @@ class NavBar extends Component {
             <span className="navbar-toggler-icon"></span>
           </button>
           <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div className="navbar-nav mr-auto">
-              {user && (
-                <React.Fragment>
-                  <NavLink className="nav-link nav-item" to="/feed">
-                    Home
-                  </NavLink>
-                  <NavLink
-                    className="nav-link nav-item"
-                    to={`/profile/${user.user.username}`}
-                  >
-                    Profile
-                  </NavLink>
-                </React.Fragment>
-              )}
-            </div>
             <div className="navbar-nav ml-auto">
               {user && (
                 <React.Fragment>
-                  <form className="form-inline ">
-                    <div className="collapse" id="collapseExample">
-                      <input
-                        className="form-control form-control-sm mr-2 ml-2 d-none d-md-block"
-                        id="collapseExample"
-                        type="text"
-                        placeholder="Search Person"
-                        aria-label="Search"
-                        onChange={this.handleSearch}
-                      />
-                    </div>
-                    <i
-                      className="fa fa-search m-2 d-none d-md-block"
-                      data-toggle="collapse"
-                      data-target="#collapseExample"
-                      aria-expanded="false"
-                      aria-controls="collapseExample"
-                    ></i>
-                  </form>
-
                   <NavLink
-                    className="nav-link nav-item"
+                    onClick={this.onClick}
+                    className="nav-link nav-item pt-1 pb-1"
+                    to="/feed"
+                  >
+                    <div className="d-flex flex-column bd-highlight align-items-center">
+                      <i
+                        className="material-icons-round"
+                        style={{ fontSize: "24px" }}
+                      >
+                        home
+                      </i>
+                      <small style={{ transform: "translateY(0)" }}>Home</small>
+                    </div>
+                  </NavLink>
+                  <NavLink
+                    onClick={this.onClick}
+                    className="nav-link nav-item pt-1 pb-1"
+                    to="/about"
+                  >
+                    <div className="d-flex flex-column bd-highlight align-items-center">
+                      <i
+                        className="material-icons"
+                        style={{ fontSize: "24px" }}
+                      >
+                        info
+                      </i>
+                      <small style={{ transform: "translateY(0)" }}>
+                        About
+                      </small>
+                    </div>
+                  </NavLink>
+                  <NavLink
+                    onClick={this.onClick}
+                    className="nav-link nav-item pt-1 pb-1"
                     to={`/profile/${user.user.username}`}
                   >
-                    {user.user.username}
+                    <div className="d-flex flex-column bd-highlight align-items-center">
+                      <i
+                        className="material-icons"
+                        style={{ fontSize: "24px" }}
+                      >
+                        account_circle
+                      </i>
+                      <small style={{ transform: "translateY(0)" }}>Me</small>
+                    </div>
                   </NavLink>
-                  <NavLink className="nav-link nav-item" to="/logout">
-                    Logout
+                  <NavLink
+                    onClick={this.onClick}
+                    className="nav-link nav-item pt-1 pb-1"
+                    to="/logout"
+                  >
+                    <div className="d-flex flex-column bd-highlight align-items-center">
+                      <i
+                        className="material-icons"
+                        style={{ fontSize: "24px" }}
+                      >
+                        exit_to_app
+                      </i>
+                      <small style={{ transform: "translateY(0)" }}>
+                        Logout
+                      </small>
+                    </div>
                   </NavLink>
                 </React.Fragment>
               )}
               {!user && (
                 <React.Fragment>
-                  <NavLink className="nav-link nav-item" to="/login">
+                  <NavLink className="nav-link nav-item ml-0" to="/login">
                     Login
                   </NavLink>
                   <NavLink className="nav-link nav-item" to="/register">

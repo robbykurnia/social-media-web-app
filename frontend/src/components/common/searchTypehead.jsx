@@ -15,6 +15,8 @@ const SearchTypehead = ({ persons, onClick }) => {
               className="dropdown-item pr-2 pl-2"
               to={`/profile/${item.username}`}
               onClick={onClick}
+              // onMouseLeave={onMouseLeave}
+              // onMouseEnter={onMouseEnter}
             >
               <img
                 className="comment-photo mr-2"

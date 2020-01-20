@@ -29,17 +29,24 @@ class Profile extends Component {
     };
   }
 
+  handleResetFeed = () => {
+    this.setState({ lastId: null, posts: [], comments: [], likes: [] });
+    console.log("this.state.handleResetFeed", this.state);
+    console.log("handleResetFeed");
+
+    // this.componentDidMount();
+  };
+
   handleOnClickCommentButton = post => {
     // this.setState({ comment });
     const posts = [...this.state.posts];
     const indexPost = posts.indexOf(post);
     posts[indexPost].commentsRow = !posts[indexPost].commentsRow;
     this.setState({ posts });
-    console.log("comment on ", post);
   };
 
   componentDidMount() {
-    // console.log("call componentDidMount()");
+    console.log("call componentDidMount()");
     if (!this.props.match.params.username) {
       if (this.props.user)
         return (window.location = `/profile/${this.props.user.user.username}`);
@@ -55,12 +62,34 @@ class Profile extends Component {
     // console.log("call componentDidUpdate");
     // re-fetching data in current page with different user (not full reload)
     if (prevProps.match.params.username !== this.props.match.params.username) {
-      // console.log("call componentDidUpdate different user");
+      // if(!this.state.lastId || )
+      console.log("call componentDidUpdate different user");
       this.setState({ posts: [] });
+      this.setState({ comments: [] });
+      this.setState({ likes: [] });
       this.setState({ usernameThisProfile: null });
       this.setState({ lastId: null });
+      console.log("this.state.posts in CDU", this.state.posts);
+      console.log("this.state.lastId in CDU", this.state.lastId);
+      console.log(
+        "this.state.usernameThisProfile in CDU",
+        this.state.usernameThisProfile
+      );
       return this.componentDidMount();
     }
+    // if (prevProps.match.params.username !== this.props.match.params.username) {
+    //   console.log("call componentDidUpdate different user");
+    //   this.setState({ posts: [] });
+    //   this.setState({ usernameThisProfile: null });
+    //   this.setState({ lastId: null });
+    //   console.log("this.state.posts in CDU", this.state.posts);
+    //   console.log("this.state.lastId in CDU", this.state.lastId);
+    //   console.log(
+    //     "this.state.usernameThisProfile in CDU",
+    //     this.state.usernameThisProfile
+    //   );
+    //   return this.componentDidMount();
+    // }
   }
 
   // shouldComponentUpdate(nextProps, nextState) {
@@ -76,9 +105,17 @@ class Profile extends Component {
     // re-fetching data in current page with same user (not full reload)
     if (nextProps.location.state === this.props.match.params.username) {
       this.setState({ lastId: null });
-      // console.log("call componentWillReceiveProps");
+      this.setState({ lastId: null });
+      console.log("call componentWillReceiveProps");
       return this.componentDidMount();
     }
+    // if (nextProps.location.state !== this.props.match.params.username) {
+    //   this.setState({ posts: [] });
+    //   this.setState({ usernameThisProfile: null });
+    //   this.setState({ lastId: null });
+    //   console.log("call componentWillReceiveProps");
+    //   return this.componentDidMount();
+    // }
   }
 
   showCreatePost = () => {
@@ -89,74 +126,16 @@ class Profile extends Component {
   };
 
   handleGetPosts = () => {
-    getPosts(this.props.match.params.username, this.state.lastId).then(data => {
-      try {
-        const feeds = data.data.getUser;
-        const posts = data.data.getUser.somePosts;
-        const comments = data.data.getUser.somePosts;
-        const likes = data.data.getUser.somePosts;
-        const olderPosts = [this.state.posts];
-        const olderComments = [this.state.comments];
-        const olderLikes = [this.state.likes];
-        const bankPosts = [];
-        const bankComments = [];
-        const bankLikes = [];
-        const index = feeds.somePosts.length - 1;
-        const limit = 10;
-        const disableLoad =
-          posts.length < limit
-            ? this.setState({ disableLoad: true })
-            : this.setState({ disableLoad: false });
-
-        const lastId =
-          posts.length > 0
-            ? this.setState({
-                lastId: feeds.somePosts[index].id
-              })
-            : null;
-
-        const icon = [
-          ...posts.map(post => {
-            const groupLikes = _.groupBy(post.likes, "creatorLikesId");
-            if (groupLikes[this.props.user.user.id]) {
-              const isLike = groupLikes[this.props.user.user.id][0].like;
-              return { ...post, iconLikes: isLike, commentsRow: false };
-            }
-            if (post.likes.length > 0 || post.likes.length === 0) {
-              return { ...post, iconLikes: false, commentsRow: false };
-            }
-          })
-        ];
-
-        if (olderPosts.length !== 0) {
-          olderPosts[0].map(post => bankPosts.push(post));
-        }
-        if (olderComments.length !== 0) {
-          olderComments[0].map(comment => bankComments.push(comment));
-        }
-        if (olderLikes.length !== 0) {
-          olderLikes[0].map(like => bankLikes.push(like));
-        }
-
-        // icon = posts + iconLike property
-        icon.map(i => bankPosts.push(i));
-        comments.map(c => c.comments.map(item => bankComments.push(item)));
-        likes.map(l => l.likes.map(item => bankLikes.push(item)));
-
-        this.setState({
-          idThisProfile: feeds.id,
-          emailThisProfile: feeds.email,
-          usernameThisProfile: feeds.username,
-          posts: bankPosts,
-          comments: bankComments,
-          likes: bankLikes,
-          NotFound: false
-        });
-      } catch (error) {
-        // throw error;
-        return this.setState({ NotFound: true });
-      }
-    });
+    let lastId = this.state.lastId;
+    const differentUser =
+      this.state.usernameThisProfile !== this.props.match.params.username;
+    console.log("lastId:", lastId);
+    console.log(this.state.usernameThisProfile, this.state.usernameThisProfile);
+    if (differentUser) {
+      lastId = null;
+    }
+    console.log("lastId:", lastId);
+    this.CALLGETPOST(lastId);
   };
 
   // handleGetCommentsLikes using later
@@ -371,6 +350,73 @@ class Profile extends Component {
     }
   };
 
+  CALLGETPOST(lastId) {
+    getPosts(this.props.match.params.username, lastId).then(data => {
+      try {
+        console.log("handleGetPosts", data);
+        const feeds = data.data.getUser;
+        const posts = data.data.getUser.somePosts;
+        const comments = data.data.getUser.somePosts;
+        const likes = data.data.getUser.somePosts;
+        const olderPosts = [this.state.posts];
+        const olderComments = [this.state.comments];
+        const olderLikes = [this.state.likes];
+        const bankPosts = [];
+        const bankComments = [];
+        const bankLikes = [];
+        const index = feeds.somePosts.length - 1;
+        const limit = 10;
+        const disableLoad =
+          posts.length < limit
+            ? this.setState({ disableLoad: true })
+            : this.setState({ disableLoad: false });
+        const lastId =
+          posts.length > 0
+            ? this.setState({
+                lastId: feeds.somePosts[index].id
+              })
+            : null;
+        const icon = [
+          ...posts.map(post => {
+            const groupLikes = _.groupBy(post.likes, "creatorLikesId");
+            if (groupLikes[this.props.user.user.id]) {
+              const isLike = groupLikes[this.props.user.user.id][0].like;
+              return { ...post, iconLikes: isLike, commentsRow: false };
+            }
+            if (post.likes.length > 0 || post.likes.length === 0) {
+              return { ...post, iconLikes: false, commentsRow: false };
+            }
+          })
+        ];
+        if (olderPosts.length !== 0) {
+          olderPosts[0].map(post => bankPosts.push(post));
+        }
+        if (olderComments.length !== 0) {
+          olderComments[0].map(comment => bankComments.push(comment));
+        }
+        if (olderLikes.length !== 0) {
+          olderLikes[0].map(like => bankLikes.push(like));
+        }
+        // icon = posts + iconLike property
+        icon.map(i => bankPosts.push(i));
+        comments.map(c => c.comments.map(item => bankComments.push(item)));
+        likes.map(l => l.likes.map(item => bankLikes.push(item)));
+        this.setState({
+          idThisProfile: feeds.id,
+          emailThisProfile: feeds.email,
+          usernameThisProfile: feeds.username,
+          posts: bankPosts,
+          comments: bankComments,
+          likes: bankLikes,
+          NotFound: false
+        });
+      } catch (error) {
+        // throw error;
+        return this.setState({ NotFound: true });
+      }
+    });
+  }
+
   render() {
     console.log("this.state in render:", this.state);
     // if (service.getCurrentUser()) return <Redirect to="/feed" />;
@@ -386,6 +432,7 @@ class Profile extends Component {
 
         {!this.state.NotFound && this.props.user && (
           <React.Fragment>
+            {/* <div className="backdrop-post"></div> */}
             <ProfileJumbotron
               user={this.props.user.user}
               idThisProfile={this.state.idThisProfile}
@@ -422,6 +469,7 @@ class Profile extends Component {
               handleCreateComment={this.handleCreateComment}
               handleOnClickCommentButton={this.handleOnClickCommentButton}
               handleUpdateOrCreateLike={this.handleUpdateOrCreateLike}
+              handleResetFeed={this.handleResetFeed}
             />
           </React.Fragment>
         )}
