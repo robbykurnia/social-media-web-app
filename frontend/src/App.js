@@ -24,13 +24,16 @@ class App extends Component {
     return (
       <div>
         <NavBar user={user} />
-        <div className="container not-navbar mb-3">
+        <div className="container not-navbar mb-3 mt-5">
           <Switch>
             <Route
               path="/profile/:username?"
               render={props => <Profile {...props} user={user} />}
             />
-            <Route path="/" render={props => <Home {...props} user={user} />} />
+            <Route
+              path="/news"
+              render={props => <Home {...props} user={user} />}
+            />
             <Route path="/search/:username" exact component={SearchPerson} />
             <Route path="/login" exact component={Login} />
             <Route path="/logout" exact component={Logout} />

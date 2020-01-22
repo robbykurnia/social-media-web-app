@@ -26,7 +26,7 @@ const Feed = ({
     <React.Fragment>
       <table className="w-100">
         {posts.map(post => (
-          <tbody key={post.id} className="card-body card mb-2 p-2">
+          <tbody key={post.id} className="card-body card mb-2 p-2 ml-0 mr-0">
             <tr className="d-flex align-items-center">
               <td className="border-0 d-flex flex-column mr-2">
                 <Link

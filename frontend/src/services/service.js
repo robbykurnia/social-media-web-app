@@ -5,21 +5,20 @@ import SwalAlert from "../services/SwalAlert";
 const tokenKey = "token";
 const urlEndPoint = apiUrl;
 
-function fetchData(requestBody) {
-  return fetch(urlEndPoint, {
+async function fetchData(requestBody) {
+  const res = await fetch(urlEndPoint, {
     method: "POST",
     body: JSON.stringify(requestBody),
     headers: {
       "Content-Type": "application/json",
       Authorization: localStorage.getItem(tokenKey)
     }
-  }).then(res => {
-    console.log("res di service", res);
-    if (res.status >= 400 && res.status < 500) {
-      return SwalAlert.warning(`${res.status} ${res.statusText}`, "error");
-    }
-    return res.json();
   });
+  console.log("res di service", res);
+  if (res.status >= 400 && res.status < 500) {
+    return SwalAlert.warning(`${res.status} ${res.statusText}`, "error");
+  }
+  return res.json();
 }
 // TUJUAN: MAU SERACH USER DI SERACPESON COMPONENT
 export function getUser(propsUsername) {
@@ -78,6 +77,42 @@ export function getPosts(propsUsername, lastId) {
                 username
                 id
               }
+            }
+          }
+        }
+      `
+  };
+
+  return fetchData(requestBody);
+}
+export function getAllPosts(lastId) {
+  // const username = JSON.stringify(propsUsername).toLowerCase();
+  const cursor = lastId ? lastId : null;
+  const requestBody = {
+    query: `
+        query{
+          getSelectedPost(input:{limit:10, cursor: ${cursor}}) {
+            id
+            post
+            createdAt
+            likes {
+              id
+              like
+              postId
+              creatorLikesId
+            }
+            comments {
+              id
+              postId
+              comment
+              creatorComment {
+                id
+                username
+              }
+            }
+            creatorPost {
+              username
+              id
             }
           }
         }
@@ -234,6 +269,7 @@ export default {
   createComment,
   getUser,
   getPosts,
+  getAllPosts,
   // getCommentsLikes,
   getCurrentUser,
   logout

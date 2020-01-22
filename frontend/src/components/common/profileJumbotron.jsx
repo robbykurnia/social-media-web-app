@@ -10,7 +10,8 @@ const ProfileJumbotron = ({ idThisProfile, usernameThisProfile }) => {
     transform: "translateY(80px)"
   };
   const styleCard = {
-    minHeight: "284px"
+    minHeight: "284px",
+    minWidth: "928px"
   };
   return (
     <div className="card mb-3" style={styleCard}>

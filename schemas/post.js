@@ -12,6 +12,12 @@ type Post {
 `;
 
 export const inputs = `
+
+input GetSelectedPost {
+  limit: Int! 
+  cursor:Int
+}
+
 input GetPostInput {
   creatorPostId: Int!
 }
@@ -32,6 +38,7 @@ input DeletePostInput {
 `;
 
 export const queries = `
+  getSelectedPost(input: GetSelectedPost!): [Post!]!
   getPost(input: GetPostInput!): [Post!]!
   allPost: [Post!]!
 `;

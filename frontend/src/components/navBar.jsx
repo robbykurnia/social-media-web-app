@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, withRouter } from "react-router-dom";
+// import { NavBar } from "react-bootstrap";
 import { getUser } from "./../services/service";
 import SearchTypehead from "./common/searchTypehead";
 
@@ -9,6 +10,8 @@ class NavBar extends Component {
     this.state = {
       onClickInput: false,
       searchInput: "",
+      onEnter: false,
+      pushEnter: false,
       persons: [
         // { id: 1, username: "robby" },
         // { id: 2, username: "robby" },
@@ -17,8 +20,26 @@ class NavBar extends Component {
     };
   }
 
+  onKeyDown = e => {
+    console.log(e.key);
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (this.state.persons.length > 0) {
+        this.props.history.push({
+          pathname: `/profile/${this.state.persons[0].username}`
+        });
+        this.setState({ searchInput: "", persons: [] });
+      }
+      if (this.state.persons.length === 0) {
+        this.props.history.push({
+          pathname: `/search/${this.state.searchInput}`
+        });
+        this.setState({ searchInput: "", persons: [] });
+      }
+    }
+  };
+
   onClickBackdrop = () => {
-    console.log("onClickBackdrop");
     this.setState({ searchInput: "", persons: [], onClickInput: false });
   };
 
@@ -29,15 +50,6 @@ class NavBar extends Component {
 
   onClick = () => {
     this.setState({ searchInput: "", persons: [], onClickInput: false });
-  };
-
-  onSubmit = e => {
-    e.preventDefault();
-    // this.setState({ redirect: true });
-    const move =
-      this.state.persons.length !== 0
-        ? (window.location = `/profile/${this.state.persons[0].username}`)
-        : (window.location = `/search/${this.state.searchInput}`);
   };
 
   onChange = e => {
@@ -52,7 +64,6 @@ class NavBar extends Component {
     getUser(searchInput.trim()).then(data => {
       try {
         const substring = data.data.s1;
-        // const regex = data.data.s2;
         const bankPerson = [];
         const identify = [];
         const persons = [];
@@ -61,8 +72,6 @@ class NavBar extends Component {
           substring.length > 0
             ? substring.map(item => bankPerson.push(item))
             : null;
-        // const addRegex =
-        //   regex.length > 0 ? regex.map(item => bankPerson.push(item)) : null;
 
         for (let i = 0; i < bankPerson.length; i++) {
           const find = identify.indexOf(bankPerson[i].id);
@@ -110,30 +119,22 @@ class NavBar extends Component {
             EXPOSE
           </Link>
 
-          <form onSubmit={this.onSubmit} className="form-inline mr-auto">
+          <form className="form-inline mr-auto">
             <div className="dropdown show">
               <input
                 className="form-control form-control-sm mr-2 dropdown-toggle"
                 type="text"
-                // id="dropdownMenuButton"
                 data-toggle="dropdown"
-                // aria-haspopup="false"
-                // aria-expanded="true"
                 autoComplete="off"
                 value={this.state.searchInput}
                 onChange={this.onChange}
                 onMouseDown={this.onClickInput}
-                // onMouseDown={this.onMouseDown}
-                // onMouseUp={this.onMouseUp}
-                // onBlur={this.state.onMouseLeave ? this.onBlur : undefined}
-                // onFocusOut={this.state.onFocusInput && this.handleFocusOutInput}
-                // onFocus={this.handleClickInput}
+                onKeyDown={this.onKeyDown}
               />
 
               <SearchTypehead
                 persons={this.state.persons}
                 onClick={this.onClick}
-                // onMouseEnter={this.onMouseEnters
               />
             </div>
           </form>
@@ -155,7 +156,10 @@ class NavBar extends Component {
                   <NavLink
                     onClick={this.onClick}
                     className="nav-link nav-item pt-1 pb-1"
-                    to="/"
+                    to={{
+                      pathname: `/news`,
+                      state: "news"
+                    }}
                   >
                     <div className="d-flex flex-column bd-highlight align-items-center">
                       <i
@@ -187,7 +191,6 @@ class NavBar extends Component {
                   <NavLink
                     onClick={this.onClick}
                     className="nav-link nav-item pt-1 pb-1"
-                    // to={`/profile/${user.user.username}`}
                     to={{
                       pathname: `/profile/${user.user.username}`,
                       state: user.user.username
@@ -240,4 +243,4 @@ class NavBar extends Component {
   }
 }
 
-export default NavBar;
+export default withRouter(NavBar);

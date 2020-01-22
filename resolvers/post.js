@@ -55,7 +55,40 @@ export const queries = {
     models.Post.findAll({
       where: args.createdAt,
       order: [["createdAt", "DESC"]]
-    })
+    }),
+  getSelectedPost: async (parent, args, { models }) => {
+    if (!args.input.cursor) {
+      const posts = await models.Post.findAll({
+        limit: args.input.limit,
+        // where: args.createdAt,
+
+        // for following user
+        // where: { creatorPostId: { [Op.in]: [9, 10] } },
+        order: [["createdAt", "DESC"]]
+      });
+      return posts;
+    }
+    if (args.input.cursor) {
+      const posts = await models.Post.findAll({
+        limit: args.input.limit,
+        // where: args.createdAt,
+
+        // for following user
+        // where: { creatorPostId: { [Op.in]: [9, 10] } },
+
+        // for following user with cursor
+        // where: {
+        //   [Op.and]: [
+        //     { creatorPostId: { [Op.in]: [9, 10] } },
+        //     { id: { [Op.lt]: args.input.cursor } }
+        //   ]
+        // },
+        where: { id: { [Op.lt]: args.input.cursor } },
+        order: [["createdAt", "DESC"]]
+      });
+      return posts;
+    }
+  }
 };
 
 export const mutation = {

@@ -63,7 +63,7 @@ class SearchPerson extends Component {
             persons.map(person => (
               <tbody key={person.id} className="card-body card mb-3 p-2">
                 <tr className="d-flex align-items-center">
-                  <td className="d-flex flex-column border-0">
+                  <td className="d-flex flex-column border-0 mr-2">
                     <Link
                       to={`/profile/${person.username}`}
                       className="post-photo"

@@ -25,7 +25,6 @@ export const nested = {
 };
 
 export const someBatchPosts = async (keys, { Post }) => {
-  // console.log("\n\nkeys atas :", keys, "\n\n\n");
   const cursor = keys[0].cursor;
   const limit = keys[0].limit;
 

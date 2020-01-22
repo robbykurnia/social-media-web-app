@@ -30,40 +30,6 @@ class Profile extends Component {
     };
   }
 
-  handleGetPosts = () => {
-    console.log("call handleGetPosts");
-    console.log("this.state.lastId", this.state.lastId);
-    let lastId = this.state.lastId;
-    const differentUser =
-      this.state.usernameThisProfile !== this.props.match.params.username;
-    console.log(this.state.usernameThisProfile, this.state.usernameThisProfile);
-    if (differentUser) {
-      lastId = null;
-    }
-    console.log("this.state.lastId bawah", this.state.lastId);
-    this.CALLGETPOST(this.state.lastId);
-  };
-
-  handleResetFeed = () => {
-    this.setState({
-      lastId: null,
-      profile: [],
-      posts: [],
-      comments: [],
-      likes: []
-    });
-    // console.log("call handleResetFeed");
-    // console.log("this.state.lastId", this.state.lastId);
-    // console.log("this.state.handleResetFeed", this.state);
-    // console.log(
-    //   "this.props.match.params.username",
-    //   this.props.match.params.username
-    // );
-    // this.CALLGETPOST(null);
-    // this.componentWillReceiveProps();
-    // this.componentDidMount();
-  };
-
   componentDidMount() {
     console.log("call componentDidMount");
     console.log("this.state.lastId", this.state.lastId);
@@ -146,6 +112,40 @@ class Profile extends Component {
   //   console.log("this.props.location di SCU:", this.props);
   //   return nextProps === this.props;
   // }
+
+  handleGetPosts = () => {
+    console.log("call handleGetPosts");
+    console.log("this.state.lastId", this.state.lastId);
+    let lastId = this.state.lastId;
+    const differentUser =
+      this.state.usernameThisProfile !== this.props.match.params.username;
+    console.log(this.state.usernameThisProfile, this.state.usernameThisProfile);
+    if (differentUser) {
+      lastId = null;
+    }
+    console.log("this.state.lastId bawah", this.state.lastId);
+    this.CALLGETPOST(this.state.lastId);
+  };
+
+  handleResetFeed = () => {
+    this.setState({
+      lastId: null,
+      profile: [],
+      posts: [],
+      comments: [],
+      likes: []
+    });
+    // console.log("call handleResetFeed");
+    // console.log("this.state.lastId", this.state.lastId);
+    // console.log("this.state.handleResetFeed", this.state);
+    // console.log(
+    //   "this.props.match.params.username",
+    //   this.props.match.params.username
+    // );
+    // this.CALLGETPOST(null);
+    // this.componentWillReceiveProps();
+    // this.componentDidMount();
+  };
 
   handleOnClickCommentButton = post => {
     // this.setState({ comment });
@@ -483,44 +483,75 @@ class Profile extends Component {
         {!this.state.NotFound && this.props.user && (
           <React.Fragment>
             {/* <div className="backdrop-post"></div> */}
-            <ProfileJumbotron
-              user={this.props.user.user}
-              idThisProfile={this.state.profile[0]}
-              emailThisProfile={this.state.profile[1]}
-              usernameThisProfile={this.state.profile[2]}
-            />
-            <PostInput
-              reset={this.state.reset}
-              onChangePostInput={this.onChangePostInput}
-              handleCreatePost={this.handleCreatePost}
-              showCreatePost={this.state.showCreatePost}
-            />
-            <Feed
-              user={this.props.user.user}
-              idThisProfile={this.state.idThisProfile}
-              usernameThisProfile={this.state.usernameThisProfile}
-              emailThisProfile={this.state.emailThisProfile}
-              showCreatePost={this.state.showCreatePost}
-              disableLoad={this.state.disableLoad}
-              reset={this.state.reset}
-              posts={this.state.posts}
-              comments={this.state.comments}
-              likes={this.state.likes}
-              createPostInput={this.createPostInput}
-              onChangePostInput={this.onChangePostInput}
-              handleGetPosts={this.handleGetPosts}
-              handleUpdatePost={this.handleUpdatePost}
-              handleDeletePost={this.handleDeletePost}
-              handleCreatePost={this.handleCreatePost}
-              createCommentInput={this.createCommentInput}
-              onChangeCommentInput={this.onChangeCommentInput}
-              handleDeleteComment={this.handleDeleteComment}
-              handleUpdateComment={this.handleUpdateComment}
-              handleCreateComment={this.handleCreateComment}
-              handleOnClickCommentButton={this.handleOnClickCommentButton}
-              handleUpdateOrCreateLike={this.handleUpdateOrCreateLike}
-              handleResetFeed={this.handleResetFeed}
-            />
+            <div className="row" style={{ minWidth: "928px" }}>
+              <div className="col p-0">
+                <ProfileJumbotron
+                  user={this.props.user.user}
+                  idThisProfile={this.state.profile[0]}
+                  emailThisProfile={this.state.profile[1]}
+                  usernameThisProfile={this.state.profile[2]}
+                />
+              </div>
+            </div>
+
+            <div className="row" style={{ minWidth: "928px" }}>
+              <div className="col-8 m-0 pr-2 p-0">
+                <PostInput
+                  reset={this.state.reset}
+                  onChangePostInput={this.onChangePostInput}
+                  handleCreatePost={this.handleCreatePost}
+                  showCreatePost={this.state.showCreatePost}
+                />
+                <Feed
+                  user={this.props.user.user}
+                  disableLoad={this.state.disableLoad}
+                  posts={this.state.posts}
+                  comments={this.state.comments}
+                  likes={this.state.likes}
+                  createPostInput={this.createPostInput}
+                  handleGetPosts={this.handleGetPosts}
+                  handleUpdatePost={this.handleUpdatePost}
+                  handleDeletePost={this.handleDeletePost}
+                  createCommentInput={this.createCommentInput}
+                  onChangeCommentInput={this.onChangeCommentInput}
+                  handleDeleteComment={this.handleDeleteComment}
+                  handleUpdateComment={this.handleUpdateComment}
+                  handleCreateComment={this.handleCreateComment}
+                  handleOnClickCommentButton={this.handleOnClickCommentButton}
+                  handleUpdateOrCreateLike={this.handleUpdateOrCreateLike}
+                  handleResetFeed={this.handleResetFeed}
+                />
+              </div>
+              <div className="col-4 m-0 pl-2 p-0">
+                <table className="w-100">
+                  <tbody className="card card-body card mb-2 p-2">
+                    <tr className="border-bottom">
+                      <td>
+                        <strong>Personal Information</strong>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Example Detail</td>
+                    </tr>
+                    <tr>
+                      <td>Example Detail</td>
+                    </tr>
+                    <tr>
+                      <td>Example Detail</td>
+                    </tr>
+                    <tr>
+                      <td>Example Detail</td>
+                    </tr>
+                    <tr>
+                      <td>Example Detail</td>
+                    </tr>
+                    <tr>
+                      <td>Example Detail</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </React.Fragment>
         )}
       </React.Fragment>
