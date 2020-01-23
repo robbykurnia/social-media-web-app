@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
+import ReactLoading from "react-loading";
 import { apiUrl } from "../config.json";
 import service from "../services/service";
 import SwalAlert from "../services/SwalAlert";
@@ -8,7 +9,7 @@ const urlEndPoint = apiUrl;
 const tokenKey = "token";
 
 class Register extends Component {
-  state = { disabled: true };
+  state = { disabled: true, isLoading: false };
 
   constructor(props) {
     super(props);
@@ -32,11 +33,6 @@ class Register extends Component {
     const email = this.email.current.value;
     const username = this.username.current.value;
     const password = this.password.current.value;
-    console.log(
-      `email: ${email} \nusername:${username} ${
-        username.trim().split(" ").length
-      } ${username.match(/[^a-zA-Z0-9]/)} \npassword: ${password}`
-    );
 
     // Check Special Characters
     if (username.match(/[^a-zA-Z0-9]/))
@@ -44,8 +40,8 @@ class Register extends Component {
         "Username in alphabet and/or numbers",
         "warning"
       );
-    console.log(`email: ${email} \npassword: ${password}`);
 
+    this.setState({ isLoading: true });
     const requestBody = {
       query: `
         mutation{
@@ -68,6 +64,7 @@ class Register extends Component {
         return res.json();
       })
       .then(user => {
+        this.setState({ isLoading: false });
         if (user.errors) {
           const errorMessage = user.errors[0].message;
           return SwalAlert.warning(errorMessage, "warning");
@@ -75,7 +72,7 @@ class Register extends Component {
           const data = JSON.stringify(user.data.login).split(" ");
           const jwt = data[1];
           localStorage.setItem(tokenKey, jwt);
-          return (window.location = "/feed");
+          return (window.location = "/news");
         }
       });
   };
@@ -120,7 +117,6 @@ class Register extends Component {
             required
           />
         </div>
-
         <button
           type="submit"
           className="btn btn-primary"
@@ -128,6 +124,9 @@ class Register extends Component {
         >
           Submit
         </button>
+        {this.state.isLoading && (
+          <ReactLoading type={"bars"} color={"#007bff"} className="mx-auto" />
+        )}
       </form>
     );
   }

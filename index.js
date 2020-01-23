@@ -13,7 +13,7 @@ import { batchPosts, someBatchPosts } from "./resolvers/user";
 import { batchComments, batchLikes } from "./resolvers/post";
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000;
 const jwtSecretKey = "put your secret key on environment!";
 const schema = makeExecutableSchema({
   typeDefs,
