@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import bodyParser from "body-parser";
 import { graphiqlExpress, graphqlExpress } from "apollo-server-express";
 import { makeExecutableSchema } from "graphql-tools";
@@ -13,13 +14,14 @@ import { batchPosts, someBatchPosts } from "./resolvers/user";
 import { batchComments, batchLikes } from "./resolvers/post";
 
 const app = express();
-const port = process.env.PORT || 4000;
+// const port = process.env.PORT || 4000;
 const jwtSecretKey = "put your secret key on environment!";
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers
 });
 
+app.set("port", process.env.PORT || 4000);
 app.use(cors());
 app.use(auth);
 
@@ -43,16 +45,22 @@ app.use(
 
 app.use("/graphiql", graphiqlExpress({ endpointURL: "/graphql" }));
 
-models.sequelize
-  .sync()
-  .then(() =>
-    app.listen(port, () =>
-      console.log(
-        `
-Running a GraphQL API server at http://localhost:${port}/graphql`
-      )
-    )
-  )
-  .catch(err => {
-    throw err;
+models.sequelize.sync().then(function() {
+  http.createServer(app).listen(app.get("port"), function() {
+    console.log("Express server listening on port " + app.get("port"));
   });
+});
+
+// models.sequelize
+//   .sync()
+//   .then(() =>
+//     app.listen(port, () =>
+//       console.log(
+//         `
+// Running a GraphQL API server at http://localhost:${port}/graphql`
+//       )
+//     )
+//   )
+//   .catch(err => {
+//     throw err;
+//   });
