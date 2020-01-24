@@ -1,15 +1,8 @@
-const Sequelize = require("sequelize");
+import Sequelize from "sequelize";
 
 const sequelize = new Sequelize("my_graphql_db_2", "postgres", "postgres", {
   dialect: "postgres"
 });
-
-// Temporary database
-// const sequelize = new Sequelize(config.get("db"), {});
-// const sequelize = new Sequelize(
-//   "	postgres://qgpselmm:tpkrY-Q-WOCatu9yJwGztz_kVeGKp9L3@rajje.db.elephantsql.com:5432/qgpselmm",
-//   {}
-// );
 
 const db = {
   User: sequelize.import("./user"),

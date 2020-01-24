@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import _ from "lodash";
 import Feed from "./common/feed";
 import PostInput from "./common/postInput";
@@ -10,7 +11,6 @@ import {
   deleteComment,
   updateOrCreateLike
 } from "../services/service";
-import { Redirect } from "react-router-dom";
 
 class Home extends Component {
   constructor(props) {
@@ -22,24 +22,11 @@ class Home extends Component {
       posts: [],
       comments: [],
       likes: []
-      // showCreatePost: false,
-      // reset: false,
-      // disablePostButton: true,
-      // lastId: null
     };
   }
 
   componentDidMount() {
-    console.log("call componentDidMount");
-    console.log("this.state.lastId", this.state.lastId);
-    // if (!this.props.match.params.username) {
-    //   if (this.props.user)
-    //     return (window.location = `/profile/${this.props.user.user.username}`);
-    //   return (window.location = "/login");
-    // }
-    // this.showCreatePost();
     this.handleGetPosts();
-    // this.handleGetCommentsLikes();
     window.scrollTo(0, 0);
   }
 
@@ -54,19 +41,8 @@ class Home extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    console.log("call componentDidUpdate");
-    console.log("this.state.lastId", this.state.lastId);
     // re-fetching data in current page with different user (not full reload)
     if (prevProps.match.params.username !== this.props.match.params.username) {
-      console.log("call componentDidUpdate different user");
-      console.log(
-        "prevProps.match.params.username",
-        prevProps.match.params.username
-      );
-      console.log(
-        "this.props.match.params.username",
-        this.props.match.params.username
-      );
       this.setState({
         lastId: null,
         profile: [],
@@ -81,8 +57,6 @@ class Home extends Component {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    console.log("call componentWillReceiveProps");
-    console.log("this.state.lastId", this.state.lastId);
     // re-fetching data in current page with same user (not full reload)
     if (nextProps.location.state === "news") {
       console.log("call componentWillReceiveProps same User");
@@ -99,7 +73,6 @@ class Home extends Component {
   }
 
   handleOnClickCommentButton = post => {
-    // this.setState({ comment });
     const posts = [...this.state.posts];
     const indexPost = posts.indexOf(post);
     posts[indexPost].commentsRow = !posts[indexPost].commentsRow;
@@ -107,10 +80,6 @@ class Home extends Component {
   };
 
   showCreatePost = () => {
-    console.log("call showCreatePost");
-    console.log(
-      this.props.user.user.username === this.props.match.params.username
-    );
     if (!this.props.user) return this.setState({ showCreatePost: false });
     this.props.user.user.username === this.props.match.params.username
       ? this.setState({ showCreatePost: true })
@@ -306,9 +275,6 @@ class Home extends Component {
 
   getPosts(lastId) {
     const username = this.props.match.params.username;
-    console.log("getPosts");
-    console.log("lastId", lastId);
-    console.log("username", username);
     getAllPosts(lastId).then(data => {
       try {
         console.log("handleGetPosts", data);
@@ -327,7 +293,6 @@ class Home extends Component {
         const olderFeeds = olderPosts[0].map(item => bankFeedsId.push(item.id));
         const uniqueFeedsId = [...new Set(bankFeedsId)];
         const isUnique = bankFeedsId.length === uniqueFeedsId.length;
-        console.log("isUnique", isUnique);
         if (!isUnique) {
           return;
         }
@@ -382,50 +347,45 @@ class Home extends Component {
           NotFound: false
         });
       } catch (error) {
-        throw error;
-        return this.setState({ NotFound: true });
+        return;
       }
     });
   }
 
   render() {
-    console.log("this.state in render:", this.state);
+    if (!this.props.user) return <Redirect to="/login" />;
 
     return (
       <React.Fragment>
-        {/* {!this.props.user && (
-          <Redirect to="/login" />
-        )} */}
-
-        {/* {this.props.user && ( */}
-        <React.Fragment>
-          <PostInput
-            reset={this.state.reset}
-            onChangePostInput={this.onChangePostInput}
-            handleCreatePost={this.handleCreatePost}
-            showCreatePost={true}
-          />
-          <Feed
-            user={this.props.user.user}
-            disableLoad={this.state.disableLoad}
-            posts={this.state.posts}
-            comments={this.state.comments}
-            likes={this.state.likes}
-            createPostInput={this.createPostInput}
-            handleGetPosts={this.handleGetPosts}
-            handleUpdatePost={this.handleUpdatePost}
-            handleDeletePost={this.handleDeletePost}
-            createCommentInput={this.createCommentInput}
-            onChangeCommentInput={this.onChangeCommentInput}
-            handleDeleteComment={this.handleDeleteComment}
-            handleUpdateComment={this.handleUpdateComment}
-            handleCreateComment={this.handleCreateComment}
-            handleOnClickCommentButton={this.handleOnClickCommentButton}
-            handleUpdateOrCreateLike={this.handleUpdateOrCreateLike}
-            handleResetFeed={this.handleResetFeed}
-          />
-        </React.Fragment>
-        {/* )} */}
+        {this.props.user && (
+          <React.Fragment>
+            <PostInput
+              reset={this.state.reset}
+              onChangePostInput={this.onChangePostInput}
+              handleCreatePost={this.handleCreatePost}
+              showCreatePost={true}
+            />
+            <Feed
+              user={this.props.user.user}
+              disableLoad={this.state.disableLoad}
+              posts={this.state.posts}
+              comments={this.state.comments}
+              likes={this.state.likes}
+              createPostInput={this.createPostInput}
+              handleGetPosts={this.handleGetPosts}
+              handleUpdatePost={this.handleUpdatePost}
+              handleDeletePost={this.handleDeletePost}
+              createCommentInput={this.createCommentInput}
+              onChangeCommentInput={this.onChangeCommentInput}
+              handleDeleteComment={this.handleDeleteComment}
+              handleUpdateComment={this.handleUpdateComment}
+              handleCreateComment={this.handleCreateComment}
+              handleOnClickCommentButton={this.handleOnClickCommentButton}
+              handleUpdateOrCreateLike={this.handleUpdateOrCreateLike}
+              handleResetFeed={this.handleResetFeed}
+            />
+          </React.Fragment>
+        )}
       </React.Fragment>
     );
   }

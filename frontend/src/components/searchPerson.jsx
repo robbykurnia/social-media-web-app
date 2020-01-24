@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { getUser } from "./../services/service";
 import { Link } from "react-router-dom";
+import ProfileNotFound from "./common/profileNotFound";
 
 class SearchPerson extends Component {
   constructor(props) {
@@ -51,49 +52,59 @@ class SearchPerson extends Component {
 
     return (
       <React.Fragment>
-        <table className="w-100">
-          <thead>
-            <tr>
-              <td>
-                <h1>Search {this.props.match.params.username}</h1>
-              </td>
-            </tr>
-          </thead>
-          {persons.length > 0 &&
-            persons.map(person => (
-              <tbody key={person.id} className="card-body card mb-3 p-2">
-                <tr className="d-flex align-items-center">
-                  <td className="d-flex flex-column border-0 mr-2">
-                    <Link
-                      to={`/profile/${person.username}`}
-                      className="post-photo"
-                    >
-                      <img
-                        className="post-photo"
-                        src={`https://i.picsum.photos/id/${person.id}/300/300.jpg`}
-                        alt="Profile"
-                      />
-                    </Link>
-                  </td>
-                  <td className="d-flex flex-column border-0">
-                    <Link to={`/profile/${person.username}`}>
-                      {person.username}
-                    </Link>
-                    <small>{person.email}</small>
-                  </td>
-                  <td className="ml-auto">
-                    <Link to={`/profile/${person.username}`}>
-                      <button type="button" className="btn btn-primary">
-                        View
-                      </button>
-                    </Link>
+        {!this.props.user && (
+          <ProfileNotFound
+            username={this.props.match.params.username}
+            login={this.props.user}
+          />
+        )}
+        {this.props.user && (
+          <React.Fragment>
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <td>
+                    <h1>Search {this.props.match.params.username}</h1>
                   </td>
                 </tr>
-              </tbody>
-            ))}
-        </table>
-        {persons.length === 0 && (
-          <h2>{this.props.match.params.username} not found.</h2>
+              </thead>
+              {persons.length > 0 &&
+                persons.map(person => (
+                  <tbody key={person.id} className="card-body card mb-3 p-2">
+                    <tr className="d-flex align-items-center">
+                      <td className="d-flex flex-column border-0 mr-2">
+                        <Link
+                          to={`/profile/${person.username}`}
+                          className="post-photo"
+                        >
+                          <img
+                            className="post-photo"
+                            src={`https://i.picsum.photos/id/${person.id}/300/300.jpg`}
+                            alt="Profile"
+                          />
+                        </Link>
+                      </td>
+                      <td className="d-flex flex-column border-0">
+                        <Link to={`/profile/${person.username}`}>
+                          {person.username}
+                        </Link>
+                        <small>{person.email}</small>
+                      </td>
+                      <td className="ml-auto">
+                        <Link to={`/profile/${person.username}`}>
+                          <button type="button" className="btn btn-primary">
+                            View
+                          </button>
+                        </Link>
+                      </td>
+                    </tr>
+                  </tbody>
+                ))}
+            </table>
+            {persons.length === 0 && (
+              <h2>{this.props.match.params.username} not found.</h2>
+            )}
+          </React.Fragment>
         )}
       </React.Fragment>
     );

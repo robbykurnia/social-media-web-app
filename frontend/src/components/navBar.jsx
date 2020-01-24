@@ -118,26 +118,28 @@ class NavBar extends Component {
           >
             EXPOSE
           </Link>
+          {this.props.user && (
+            <form className="form-inline mr-auto">
+              <div className="dropdown show">
+                <input
+                  className="form-control form-control-sm mr-2 dropdown-toggle"
+                  type="text"
+                  data-toggle="dropdown"
+                  autoComplete="off"
+                  value={this.state.searchInput}
+                  onChange={this.onChange}
+                  onMouseDown={this.onClickInput}
+                  onKeyDown={this.onKeyDown}
+                />
 
-          <form className="form-inline mr-auto">
-            <div className="dropdown show">
-              <input
-                className="form-control form-control-sm mr-2 dropdown-toggle"
-                type="text"
-                data-toggle="dropdown"
-                autoComplete="off"
-                value={this.state.searchInput}
-                onChange={this.onChange}
-                onMouseDown={this.onClickInput}
-                onKeyDown={this.onKeyDown}
-              />
+                <SearchTypehead
+                  persons={this.state.persons}
+                  onClick={this.onClick}
+                />
+              </div>
+            </form>
+          )}
 
-              <SearchTypehead
-                persons={this.state.persons}
-                onClick={this.onClick}
-              />
-            </div>
-          </form>
           <button
             className="navbar-toggler ml-2"
             type="button"

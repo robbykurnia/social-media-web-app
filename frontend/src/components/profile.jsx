@@ -12,6 +12,7 @@ import {
   deleteComment,
   updateOrCreateLike
 } from "../services/service";
+import { Redirect } from "react-router-dom";
 
 class Profile extends Component {
   constructor(props) {
@@ -67,7 +68,7 @@ class Profile extends Component {
         changeUser: true
       });
       this.showCreatePost();
-      this.CALLGETPOST(null);
+      this.getposts(null);
       // this.setState({ posts: [] });
       // this.setState({ comments: [] });
       // this.setState({ likes: [] });
@@ -99,7 +100,7 @@ class Profile extends Component {
         likes: []
       });
       this.showCreatePost();
-      this.CALLGETPOST(null);
+      this.getposts(null);
       // return this.componentDidMount();
     }
   }
@@ -124,7 +125,7 @@ class Profile extends Component {
       lastId = null;
     }
     console.log("this.state.lastId bawah", this.state.lastId);
-    this.CALLGETPOST(this.state.lastId);
+    this.getposts(this.state.lastId);
   };
 
   handleResetFeed = () => {
@@ -135,16 +136,6 @@ class Profile extends Component {
       comments: [],
       likes: []
     });
-    // console.log("call handleResetFeed");
-    // console.log("this.state.lastId", this.state.lastId);
-    // console.log("this.state.handleResetFeed", this.state);
-    // console.log(
-    //   "this.props.match.params.username",
-    //   this.props.match.params.username
-    // );
-    // this.CALLGETPOST(null);
-    // this.componentWillReceiveProps();
-    // this.componentDidMount();
   };
 
   handleOnClickCommentButton = post => {
@@ -156,10 +147,6 @@ class Profile extends Component {
   };
 
   showCreatePost = () => {
-    console.log("call showCreatePost");
-    console.log(
-      this.props.user.user.username === this.props.match.params.username
-    );
     if (!this.props.user) return this.setState({ showCreatePost: false });
     this.props.user.user.username === this.props.match.params.username
       ? this.setState({ showCreatePost: true })
@@ -378,9 +365,9 @@ class Profile extends Component {
     }
   };
 
-  CALLGETPOST(lastId) {
+  getposts(lastId) {
     const username = this.props.match.params.username;
-    console.log("CALLGETPOST");
+    console.log("getposts");
     console.log("lastId", lastId);
     console.log("username", username);
     getPosts(username, lastId).then(data => {
@@ -469,11 +456,12 @@ class Profile extends Component {
 
   render() {
     console.log("this.state in render:", this.state);
+    // if (!this.props.user) return <Redirect to="/login" />;
     // if (service.getCurrentUser()) return <Redirect to="/feed" />;
 
     return (
       <React.Fragment>
-        {(this.state.NotFound || !this.props.user) && (
+        {(!this.props.user || this.state.NotFound) && (
           <ProfileNotFound
             username={this.props.match.params.username}
             login={this.props.user}

@@ -11,6 +11,7 @@ import service from "./services/service";
 import "./App.css";
 import SearchPerson from "./components/searchPerson";
 import About from "./components/about";
+import Intro from "./components/intro";
 
 class App extends Component {
   constructor(props) {
@@ -34,11 +35,16 @@ class App extends Component {
               path="/news"
               render={props => <Home {...props} user={user} />}
             />
-            <Route path="/search/:username" exact component={SearchPerson} />
+            <Route
+              path="/search/:username"
+              render={props => <SearchPerson {...props} user={user} />}
+            />
+            {/* <Route path="/search/:username" exact component={SearchPerson} /> */}
             <Route path="/login" exact component={Login} />
             <Route path="/logout" exact component={Logout} />
             <Route path="/register" exact component={Register} />
             <Route path="/about" exact component={About} />
+            <Route path="/" exact component={Intro} />
             <Route path="/not-found" component={NotFound} />
             <Redirect to="/not-found" />
           </Switch>
