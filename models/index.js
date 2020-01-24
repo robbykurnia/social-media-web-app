@@ -1,4 +1,4 @@
-import Sequelize from "sequelize";
+const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize("my_graphql_db_2", "postgres", "postgres", {
   dialect: "postgres"
