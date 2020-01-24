@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import bodyParser from "body-parser";
 import { graphiqlExpress, graphqlExpress } from "apollo-server-express";
 import { makeExecutableSchema } from "graphql-tools";
@@ -13,7 +14,9 @@ import { batchPosts, someBatchPosts } from "./resolvers/user";
 import { batchComments, batchLikes } from "./resolvers/post";
 
 const app = express();
-const port = process.env.PORT || 4000;
+// const port = process.env.PORT || 4000;
+const path = require("path");
+const PORT = process.env.PORT || 5000;
 const jwtSecretKey = "put your secret key on environment!";
 const schema = makeExecutableSchema({
   typeDefs,
@@ -45,16 +48,22 @@ app.use("/graphiql", graphiqlExpress({ endpointURL: "/graphql" }));
 
 console.log("index.js detected");
 
-models.sequelize
-  .sync()
-  .then(() =>
-    app.listen(port, () =>
-      console.log(
-        `
-Running a GraphQL API server at http://localhost:${port}/graphql`
-      )
-    )
-  )
-  .catch(err => {
-    throw err;
-  });
+// models.sequelize
+//   .sync()
+//   .then(() =>
+//     app.listen(port, () =>
+//       console.log(
+//         `
+// Running a GraphQL API server at http://localhost:${port}/graphql`
+//       )
+//     )
+//   )
+//   .catch(err => {
+//     throw err;
+//   });
+express()
+  .use(express.static(path.join(__dirname, "public")))
+  .set("views", path.join(__dirname, "views"))
+  .set("view engine", "ejs")
+  .get("/", (req, res) => res.render("pages/index"))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
