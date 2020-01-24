@@ -1,17 +1,31 @@
-import express from "express";
-import path from "path";
-import bodyParser from "body-parser";
-import { graphiqlExpress, graphqlExpress } from "apollo-server-express";
-import { makeExecutableSchema } from "graphql-tools";
-import cors from "cors";
-import DataLoader from "dataloader";
-import _ from "lodash";
-import models from "./models";
-import auth from "./middleware/auth";
-import typeDefs from "./schemas/index";
-import resolvers from "./resolvers/index";
-import { batchPosts, someBatchPosts } from "./resolvers/user";
-import { batchComments, batchLikes } from "./resolvers/post";
+const express = required("express");
+const path = required("path");
+const bodyParser = required("body-parser");
+const { graphiqlExpress, graphqlExpress } = required("apollo-server-express");
+const { makeExecutableSchema } = required("graphql-tools");
+const cors = required("cors");
+const DataLoader = required("dataloader");
+const _ = required("lodash");
+const models = required("./models");
+const auth = required("./middleware/auth");
+const typeDefs = required("./schemas/index");
+const resolvers = required("./resolvers/index");
+const { batchPosts, someBatchPosts } = required("./resolvers/user");
+const { batchComments, batchLikes } = required("./resolvers/post");
+// import express from "express";
+// import path from "path";
+// import bodyParser from "body-parser";
+// import { graphiqlExpress, graphqlExpress } from "apollo-server-express";
+// import { makeExecutableSchema } from "graphql-tools";
+// import cors from "cors";
+// import DataLoader from "dataloader";
+// import _ from "lodash";
+// import models from "./models";
+// import auth from "./middleware/auth";
+// import typeDefs from "./schemas/index";
+// import resolvers from "./resolvers/index";
+// import { batchPosts, someBatchPosts } from "./resolvers/user";
+// import { batchComments, batchLikes } from "./resolvers/post";
 
 const app = express();
 // const port = process.env.PORT || 4000;
@@ -48,22 +62,16 @@ app.use("/graphiql", graphiqlExpress({ endpointURL: "/graphql" }));
 
 console.log("index.js detected");
 
-// models.sequelize
-//   .sync()
-//   .then(() =>
-//     app.listen(port, () =>
-//       console.log(
-//         `
-// Running a GraphQL API server at http://localhost:${port}/graphql`
-//       )
-//     )
-//   )
-//   .catch(err => {
-//     throw err;
-//   });
-express()
-  .use(express.static(path.join(__dirname, "public")))
-  .set("views", path.join(__dirname, "views"))
-  .set("view engine", "ejs")
-  .get("/", (req, res) => res.render("pages/index"))
-  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+models.sequelize
+  .sync()
+  .then(() =>
+    app.listen(port, () =>
+      console.log(
+        `
+Running a GraphQL API server at http://localhost:${port}/graphql`
+      )
+    )
+  )
+  .catch(err => {
+    throw err;
+  });
