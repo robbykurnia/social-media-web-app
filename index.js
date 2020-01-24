@@ -42,17 +42,23 @@ app.use(
 );
 
 app.use("/graphiql", graphiqlExpress({ endpointURL: "/graphql" }));
-
-models.sequelize
-  .sync()
-  .then(() =>
-    app.listen(port, () =>
-      console.log(
-        `
+app.listen(port, () =>
+  console.log(
+    `
 Running a GraphQL API server at http://localhost:${port}/graphql`
-      )
-    )
   )
-  .catch(err => {
-    throw err;
-  });
+);
+
+// models.sequelize
+//   .sync()
+//   .then(() =>
+//     app.listen(port, () =>
+//       console.log(
+//         `
+// Running a GraphQL API server at http://localhost:${port}/graphql`
+//       )
+//     )
+//   )
+//   .catch(err => {
+//     throw err;
+//   });
