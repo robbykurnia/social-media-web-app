@@ -1,17 +1,17 @@
-const express = required("express");
-const path = required("path");
-const bodyParser = required("body-parser");
-const { graphiqlExpress, graphqlExpress } = required("apollo-server-express");
-const { makeExecutableSchema } = required("graphql-tools");
-const cors = required("cors");
-const DataLoader = required("dataloader");
-const _ = required("lodash");
-const models = required("./models");
-const auth = required("./middleware/auth");
-const typeDefs = required("./schemas/index");
-const resolvers = required("./resolvers/index");
-const { batchPosts, someBatchPosts } = required("./resolvers/user");
-const { batchComments, batchLikes } = required("./resolvers/post");
+const express = require("express");
+const path = require("path");
+const bodyParser = require("body-parser");
+const { graphiqlExpress, graphqlExpress } = require("apollo-server-express");
+const { makeExecutableSchema } = require("graphql-tools");
+const cors = require("cors");
+const DataLoader = require("dataloader");
+const _ = require("lodash");
+const models = require("./models");
+const auth = require("./middleware/auth");
+const typeDefs = require("./schemas/index");
+const resolvers = require("./resolvers/index");
+const { batchPosts, someBatchPosts } = require("./resolvers/user");
+const { batchComments, batchLikes } = require("./resolvers/post");
 // import express from "express";
 // import path from "path";
 // import bodyParser from "body-parser";
@@ -28,9 +28,7 @@ const { batchComments, batchLikes } = required("./resolvers/post");
 // import { batchComments, batchLikes } from "./resolvers/post";
 
 const app = express();
-// const port = process.env.PORT || 4000;
-const path = require("path");
-const PORT = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 const jwtSecretKey = "put your secret key on environment!";
 const schema = makeExecutableSchema({
   typeDefs,
