@@ -1,0 +1,6 @@
+[submodule "expose_backend"]
+	path = expose_backend
+	url = https://github.com/robbykurnia/expose_backend.git
+[submodule "expose_frontend"]
+	path = expose_frontend
+	url = https://github.com/robbykurnia/expose-frontend.git
