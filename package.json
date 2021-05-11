@@ -21,7 +21,7 @@
     "joi": "^14.3.1",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^2.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "nodemon": "^2.0.1",
     "pg": "^7.17.1",
     "pg-hstore": "^2.3.3",
